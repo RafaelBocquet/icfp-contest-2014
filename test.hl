@@ -1,0 +1,49 @@
+type map          = [[I]] in
+let mapWall       = 0 in
+let mapEmpty      = 1 in
+let mapPill       = 2 in
+let mapPowerPill  = 3 in
+let mapFruit      = 4 in
+let mapLMStart    = 5 in
+let mapGStart     = 6 in
+
+type lmVitality = I in
+
+type ghostVitality         = I in
+let ghostVitalityStandard  = 0 in
+let ghostVitalityFright    = 1 in
+let ghostVitalityInvisible = 2 in
+
+type direction    = I in
+let dirUp         = 0 in
+let dirRight      = 1 in
+let dirDown       = 2 in
+let dirLeft       = 3 in
+
+type lambdaManStatus = (vitality, (I, I), direction, I, I) in
+
+type ghostStatus = (ghostVitality, (I, I), direction) in
+
+type fruitStatus = I in
+
+type worldState = (map, lambdaManStatus, [ghostStatus], fruitStatus) in
+
+type userState = I in
+
+type stepType = userState -> worldState -> (userState, direction) in
+
+type mainType = worldState -> ? -> (userState, stepType) in
+
+let step =
+    \u     : userState.
+    \world : worldState.
+    (u, dirRight)
+  in
+
+let main =
+    \world : worldState.
+    \_     : ? .
+    (0, step)
+  in
+
+main 

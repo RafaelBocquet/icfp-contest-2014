@@ -1,0 +1,52 @@
+-- ICFP Contest 2014
+
+name:                icfp
+version:             0
+build-type:          Simple
+cabal-version:       >=1.8
+
+library
+  exposed-modules:     Lib.GCC,
+                       Lib.HL,
+                       Lib.HLParser
+  
+  hs-source-dirs:      lib
+  build-depends:       base,
+                       containers,
+                       mtl,
+                       either,
+                       vector,
+                       blaze-html,
+                       bifunctors,
+                       ansi-terminal,
+                       terminal-size,
+                       transformers,
+                       utf8-string,
+                       aeson,
+                       parsec,
+                       optparse-applicative,
+                       free
+
+  default-language:    Haskell2010
+
+executable ICFP
+  main-is:             Main.hs
+  build-depends:       base,
+                       containers,
+                       mtl,
+                       either,
+                       vector,
+                       blaze-html,
+                       bifunctors,
+                       ansi-terminal,
+                       terminal-size,
+                       transformers,
+                       utf8-string,
+                       aeson,
+                       parsec,
+                       optparse-applicative,
+                       free,
+                       icfp
+
+  hs-source-dirs:      src
+  default-language:    Haskell2010
