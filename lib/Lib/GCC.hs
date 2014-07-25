@@ -37,8 +37,7 @@ data Error =
 
 programLabelMap :: [Instruction] -> Either Error (Map String Int)
 programLabelMap pr = do
-  a <- foldM programLabelMap' (0, Map.empty) pr
-  throwError $ BadLabel ""
+  snd <$> foldM programLabelMap' (0, Map.empty) pr
   where
     programLabelMap' :: (Int, Map String Int) -> Instruction -> Either Error (Int, Map String Int)
     programLabelMap' (i, mp) (LABEL l) = case Map.lookup l mp of
@@ -59,7 +58,7 @@ showInstruction mp (LDC x)      = do
 showInstruction mp (LD x y)     = do
   x' <- showValue mp x
   y' <- showValue mp y
-  return $ "LDC " ++ x' ++ " " ++ y' ++ "\n"
+  return $ "LD " ++ x' ++ " " ++ y' ++ "\n"
 showInstruction mp (ADD)        = return "ADD\n"
 showInstruction mp (SUB)        = return "SUB\n"
 showInstruction mp (MUL)        = return "MUL\n"
@@ -99,10 +98,47 @@ showInstruction mp (TRAP)       = return "TRAP\n"
 showInstruction mp (ST)         = return "ST\n"
 showInstruction mp (DBUG)       = return "DBUG\n"
 showInstruction mp (BRK)        = return "BRK\n"
-
 showInstruction mp (LABEL _)    = return ""
 
 showProgram :: [Instruction] -> Either Error String
 showProgram pr = do
   labelMap <- programLabelMap pr
   concat <$> (showInstruction labelMap) `mapM` pr 
+
+showLabelValue :: Value -> String
+showLabelValue (VInt i)   = show i
+showLabelValue (VLabel s) = "#" ++ s
+
+showLabelInstruction :: Instruction -> String
+showLabelInstruction  (LDC x)      = "LDC " ++ showLabelValue x ++ "\n"
+showLabelInstruction  (LD x y)     = "LD " ++ showLabelValue x ++ " " ++ showLabelValue y ++ "\n"
+showLabelInstruction  (ADD)        = "ADD\n"
+showLabelInstruction  (SUB)        = "SUB\n"
+showLabelInstruction  (MUL)        = "MUL\n"
+showLabelInstruction  (DIV)        = "DIV\n"
+showLabelInstruction  (CEQ)        = "CEQ\n"
+showLabelInstruction  (CGT)        = "CGT\n"
+showLabelInstruction  (CGTE)       = "CGTE\n"
+showLabelInstruction  (ATOM)       = "ATOM\n"
+showLabelInstruction  (CONS)       = "CONS\n"
+showLabelInstruction  (CAR)        = "CAR\n"
+showLabelInstruction  (CDR)        = "CDR\n"
+showLabelInstruction  (SEL x y)    = "SEL " ++ showLabelValue x ++ " " ++ showLabelValue y ++ "\n"
+showLabelInstruction  (JOIN)       = "JOIN\n"
+showLabelInstruction  (LDF x)      = "LDF " ++ showLabelValue x ++ "\n"
+showLabelInstruction  (AP x)       = "AP " ++ showLabelValue x ++ "\n"
+showLabelInstruction  (RTN)        = "RTN\n"
+showLabelInstruction  (DUM x)      = "DUM " ++ showLabelValue x ++ "\n"
+showLabelInstruction  (RAP x)      = "RAP " ++ showLabelValue x ++ "\n"
+showLabelInstruction  (STOP)       = "STOP\n"
+showLabelInstruction  (TSEL x y)   = "TSEL " ++ showLabelValue x ++ " " ++ showLabelValue y ++ "\n"
+showLabelInstruction  (TAP)        = "TAP\n"
+showLabelInstruction  (TRAP)       = "TRAP\n"
+showLabelInstruction  (ST)         = "ST\n"
+showLabelInstruction  (DBUG)       = "DBUG\n"
+showLabelInstruction  (BRK)        = "BRK\n"
+showLabelInstruction  (LABEL s)    = s ++ ":" ++ "\n"
+
+showLabelProgram :: [Instruction] -> String
+showLabelProgram pr =
+  concat $ showLabelInstruction <$> pr 

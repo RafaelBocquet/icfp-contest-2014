@@ -5,27 +5,8 @@ import Control.Applicative
 import Control.Monad
 
 import Lib.GCC
-import Lib.HL
+import Lib.HL as HL
 import Lib.HLParser hiding (Parser)
-
-test1 :: IO ()
-test1 = case showProgram
-    [ LDC  (VInt 0)
-    , LDF  (VLabel "MAIN")
-    , CONS
-    , RTN
-    , LABEL "MAIN"
-    , LABEL "MAIN"
-    , LDC  (VInt 0)
-    , LDC  (VInt 1)
-    , CONS
-    , RTN
-    ] of
-  Left err -> putStrLn $ show err
-  Right s -> putStrLn s
-
-test2 :: IO ()
-test2 = putStrLn $ show (mainType TInt)
 
 compile :: String -> IO ()
 compile filename = do
@@ -35,15 +16,41 @@ compile filename = do
     Right hl -> do
       putStrLn "Parsed : "
       putStrLn . show $ hl
-      putStrLn "Compiles to : "
+      putStrLn "Typechecks to : "
       putStrLn . show $ typecheck0 hl
+      putStrLn "Compiles to : "
+      putStrLn . showLabelProgram . runHL $ HL.fullCompile hl
+      putStrLn "UNLABEL : "
+      case showProgram . runHL $ HL.fullCompile hl of
+        Left err -> putStrLn . show $ err
+        Right s -> putStrLn s
+
+pacman :: String -> IO ()
+pacman filename = do
+  fileContents <- readFile filename
+  case parse fileContents of
+    Left err -> putStrLn . show $ err
+    Right hl -> do
+      putStrLn "Parsed : "
+      putStrLn . show $ hl
+      putStrLn "Typechecks to : "
+      case typecheck0 hl of
+        Left err -> putStrLn . show $ err
+        Right _ -> do
+          putStrLn "Compiles to : "
+          putStrLn . showLabelProgram . runHL $ HL.toPacman hl
+          case showProgram . runHL $ HL.toPacman hl of
+            Left err -> putStrLn . show $ err
+            Right s -> do
+              writeFile (filename ++ ".out") s
 
 optionParser :: Parser (IO ())
 optionParser = subparser $
-     (command "test1" $ info (pure test1) idm)
-  <> (command "test2" $ info (pure test2) idm)
-  <> (command "compile" $ info (
-        compile <$> argument str idm
+     (command "compile" $ info (
+        Main.compile <$> argument str idm
+      ) idm)
+  <> (command "pacman" $ info (
+        Main.pacman <$> argument str idm
       ) idm)
 
 main :: IO ()

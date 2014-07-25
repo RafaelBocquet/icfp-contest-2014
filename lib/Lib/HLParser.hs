@@ -36,6 +36,9 @@ hlLanguageDef = emptyDef
       [ "I"
       , "let"
       , "in"
+      , "if"
+      , "then"
+      , "else"
       ]
   , reservedOpNames =
       [ "->"
@@ -44,7 +47,8 @@ hlLanguageDef = emptyDef
       , "\\"
       , "?"
       , "+", "-", "/", "*"
-      , ";"
+      , ";", "="
+      , "==", "/=", "<=", ">=", "<", ">"
       ]
   , caseSensitive = False
   }
@@ -147,6 +151,37 @@ parseExpression1 = do
     , return e1
     ]
 
+parseExpression0 :: Parser Expr
+parseExpression0 = do
+  e1 <- parseExpression1
+  choice
+    [ do
+        lexParser $ reOpParser "=="
+        e2 <- parseExpression1
+        return $ EEq e1 e2
+    , do
+        lexParser $ reOpParser "/="
+        e2 <- parseExpression1
+        return $ ENEq e1 e2
+    , do
+        lexParser $ reOpParser "<="
+        e2 <- parseExpression1
+        return $ ELTE e1 e2
+    , do
+        lexParser $ reOpParser "<"
+        e2 <- parseExpression1
+        return $ ELT e1 e2
+    , do
+        lexParser $ reOpParser ">="
+        e2 <- parseExpression1
+        return $ EGTE e1 e2
+    , do
+        lexParser $ reOpParser ">"
+        e2 <- parseExpression1
+        return $ EGT e1 e2
+    , return e1
+    ]
+
 parseExpression :: Parser Expr
 parseExpression = choice
   [ lexParser $ do
@@ -166,13 +201,13 @@ parseExpression = choice
       e <- parseExpression
       return $ EType x v e
   , do
-      lexParser $ reParser "if0"
+      lexParser $ reParser "if"
       e <- parseExpression
       lexParser $ reParser "then"
       b1 <- parseExpression
       lexParser $ reParser "else"
       b2 <- parseExpression
-      return $ EIf0 e b1 b2
+      return $ EIf e b1 b2
   , do
       lexParser $ reOpParser "\\"
       id <- idParser

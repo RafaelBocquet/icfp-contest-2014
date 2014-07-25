@@ -1,24 +1,32 @@
+// Utility functions
+
+// let not = \b:I.if b then 0 else 1 in
+// let or  = \a:I. \b:I. if b then a else 1 in
+// let and = \a:I. \b:I. if b then 0 else a in
+
+// Game related definitions
+
 type map          = [[I]] in
-let mapWall       = 0 in
-let mapEmpty      = 1 in
-let mapPill       = 2 in
-let mapPowerPill  = 3 in
-let mapFruit      = 4 in
-let mapLMStart    = 5 in
-let mapGStart     = 6 in
+// let mapWall       = 0 in
+// let mapEmpty      = 1 in
+// let mapPill       = 2 in
+// let mapPowerPill  = 3 in
+// let mapFruit      = 4 in
+// let mapLMStart    = 5 in
+// let mapGStart     = 6 in
 
 type lmVitality = I in
 
 type ghostVitality         = I in
-let ghostVitalityStandard  = 0 in
-let ghostVitalityFright    = 1 in
-let ghostVitalityInvisible = 2 in
+// let ghostVitalityStandard  = 0 in
+// let ghostVitalityFright    = 1 in
+// let ghostVitalityInvisible = 2 in
 
 type direction    = I in
-let dirUp         = 0 in
-let dirRight      = 1 in
-let dirDown       = 2 in
-let dirLeft       = 3 in
+// let dirUp         = 0 in
+// let dirRight      = 1 in
+// let dirDown       = 2 in
+// let dirLeft       = 3 in
 
 type lambdaManStatus = (vitality, (I, I), direction, I, I) in
 
@@ -37,7 +45,7 @@ type mainType = worldState -> ? -> (userState, stepType) in
 let step =
     \u     : userState.
     \world : worldState.
-    (u, dirRight)
+    (u, 1)
   in
 
 let main =
@@ -46,4 +54,4 @@ let main =
     (0, step)
   in
 
-main 
+main
