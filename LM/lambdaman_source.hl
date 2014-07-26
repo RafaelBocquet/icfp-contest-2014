@@ -110,6 +110,11 @@ let inBounds = \b:(I, I). \p:(I, I).
   )
   in
 
+let abs = \a:I. if a < 0 then (0-a) else a in
+let min = \a:I. \b:I. if a < b then a else b in
+let max = \a:I. \b:I. if a > b then a else b in
+let distance = \a:(I, I). \b:(I, I). (abs (a[0]-b[0])) + (abs (a[1]-b[1])) in
+
 type lambdaManStatus = (lmVitality, (I, I), direction, I, I) in
 
 type ghostStatus = (ghostVitality, (I, I), direction) in
@@ -121,72 +126,62 @@ type worldState = (map, lambdaManStatus, [ghostStatus], fruitStatus) in
 let worldSize = \world:worldState.
   (length_I (head world[0]), length_LI world[0]) in
 
-let worldAt = \world:worldState. \p:(I, I). lookup_I p[0] (lookup_LI p[1] world[0]) in
+type node = (I, I) in
+type nodeId = I in
+type vertex = (nodeId, nodeId) in
+type vertexId = I in
+let normaliseVertex = \v:vertex. (min v[0] v[1], max v[0] v[1]) in
+type nodeOrVertex = <I, nodeId, vertexId> in
+let nodeOrVertexWall = 0 in
+let nodeOrVertexNode = 1 in
+let nodeOrVertexVertex = 2 in
+type graph = ([node], [vertex], [[nodeOrVertex]]) in
+type userState = ((I,I),qt256,graph,lambdaManStatus,[ghostStatus],fruitStatus) in
 
-let isPassage = \world:worldState. \p:(I, I).
-  let ws = worldSize world in
-  if inBounds ws p
+let isPassageQt = \q:qt256. \p:(I, I).
+  let slot = qt256_at q p[0] p[1] in
+  slot /= mapWall
+  in
+
+let isPassage = \u:userState. \p:(I, I).
+  if inBounds u[0] p
     then
-      let slot = worldAt world p in
+      let slot = qt256_at u[1] p[0] p[1] in
       slot /= mapWall
     else 0
   in
 
-let isCorrectMove = \world:worldState. \ws:(I, I). \d:direction.
-  let next = applyDir d (world[1][1]) in
-  if inBounds ws next
-    then isPassage world next
-    else 0
+let isCorrectMove = \u:userState. \d:direction.
+  isPassage u (applyDir d u[3][1])
   in
 
 let findGhost = \world:worldState. \p:(I, I). 0 in
 
-let abs = \a:I. if a < 0 then (0-a) else a in
-let min = \a:I. \b:I. if a < b then a else b in
-let max = \a:I. \b:I. if a > b then a else b in
-let distance = \a:(I, I). \b:(I, I). (abs (a[0]-b[0])) + (abs (a[1]-b[1])) in
-
 let distanceNearestGhost =
-  \world:worldState.
+  \u:userState.
   \p:(I, I). (
     fold (\g:ghostStatus. \d:I. min d (distance g[1] p)) with 512
-  ) world[2] in
-let distanceNearestPill  =
-  \world:worldState.
-  \p:(I, I). ((
-    fold (
-      \l:[I].
-      \acc1:(I, I).
-      let x = (
-          fold (
-            \s:I.
-            \acc2:(I, I).
-            ( acc2[0]+1
-            , if or (s == mapPill) (s == mapPowerPill)
-                then min acc2[1] (distance p (acc2[0],acc1[0]))
-                else acc2[1]
-            )
-          ) with (0, acc1[1])
-        ) l
-      in (acc1[0]+1, x[1])
-    ) with (0, 512)
-  ) world[0])[1] in
+  ) u[4] in
+let distanceNearestPill =
+  \u:userState.
+  \p:(I, I). 0
+  in
 
-let scoreMove = \world:worldState. \ws:(I, I). \d:direction.
-  let next = applyDir d (world[1][1]) in
-  if isCorrectMove world ws d
+let scoreMove = \u:userState. \d:direction.
+  let next = applyDir d u[3][1] in
+  if isCorrectMove u d
     then
-     let dPill = distanceNearestPill world next in
-     let dGhost = distanceNearestGhost world next in
+     let dPill = distanceNearestPill u next in
+     let dGhost = distanceNearestGhost u next in
      3*dGhost - 5*dPill
     else 0-10000000
 in
 
-let pickMove = \world:worldState. \ws:(I, I).
-  let upScore = scoreMove world ws dirUp in
-  let downScore = scoreMove world ws dirDown in
-  let rightScore = scoreMove world ws dirRight in
-  let leftScore = scoreMove world ws dirLeft in
+let pickMove = \u:userState.
+  let upScore = scoreMove u dirUp in
+  let downScore = scoreMove u dirDown in
+  let rightScore = scoreMove u dirRight in
+  let leftScore = scoreMove u dirLeft in
   if upScore >= downScore
     then
       if upScore >= rightScore
@@ -212,21 +207,28 @@ let pickMove = \world:worldState. \ws:(I, I).
 
 // Map graph
 
-type node = (I, I) in
-type nodeId = I in
-type vertex = (nodeId, nodeId) in
-type vertexId = I in
-let normaliseVertex = \v:vertex. (min v[0] v[1], max v[0] v[1]) in
-type nodeOrVertex = <I, nodeId, vertexId> in
-let nodeOrVertexWall = 0 in
-let nodeOrVertexNode = 1 in
-let nodeOrVertexVertex = 2 in
-type graph = ([node], [vertex], [[nodeOrVertex]]) in
+let qtFromWorld = \w:[[I]].(
+  ( fold (
+      \l:[I].
+      \acc1:(I, qt256).
+      let x = (
+          fold (
+            \s:I.
+            \acc2:(I, qt256).
+            ( acc2[0]+1
+            , qt256_insert acc2[1] acc2[0] acc1[0] s
+            )
+          ) with (0, acc1[1])
+        ) l
+      in (acc1[0]+1, x[1])
+    ) with (0, qt256_empty)
+  ) w)[1]
+  in
 
-let graphFromWorld = trace 0 in \world:worldState.
-  trace 0 in
-  let wSize = worldSize world in
-  trace 0 in
+let simplePillSet = \wSize:(I,I). \world:qt256.
+  in
+
+let graphFromWorld = \wSize:(I,I). \world:qt256.
   let nodeList =
     ( natfold
       ( \x_:I.
@@ -236,11 +238,11 @@ let graphFromWorld = trace 0 in \world:worldState.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if not (isPassage world (x, y))
+            if not (isPassageQt world (x, y))
               then acc
-            else if and (and (isPassage world (x+1, y)) (isPassage world (x-1, y))) (and (not (isPassage world (x, y+1))) (not (isPassage world (x, y-1))))
+            else if and (and (isPassageQt world (x+1, y)) (isPassageQt world (x-1, y))) (and (not (isPassageQt world (x, y+1))) (not (isPassageQt world (x, y-1))))
               then acc
-            else if and (and (isPassage world (x, y+1)) (isPassage world (x, y-1))) (and (not (isPassage world (x+1, y))) (not (isPassage world (x-1, y))))
+            else if and (and (isPassageQt world (x, y+1)) (isPassageQt world (x, y-1))) (and (not (isPassageQt world (x+1, y))) (not (isPassageQt world (x-1, y))))
               then acc
             else cons (x, y) with acc
           )
@@ -250,13 +252,19 @@ let graphFromWorld = trace 0 in \world:worldState.
       with empty node
     ) wSize[0]
     in
-  trace nodeList in (nodeList, empty I, empty [I])
+  let nodeSet = btree_set_II_from_list nodeList in
+  trace nodeSet in (nodeList, empty I, empty [I])
   in
 
 
 // ...
 
-type userState = I in
+
+let makeUserState = \world:worldState.
+  let ws = worldSize world       in
+  let qt = qtFromWorld world[0] in
+  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3])
+  in
 
 type stepType = userState -> worldState -> (userState, direction) in
 
@@ -265,15 +273,14 @@ type mainType = worldState -> ? -> (userState, stepType) in
 let step =
     \u     : userState.
     \world : worldState.
-    let size = worldSize world in
-    (0, pickMove world size)
+    let newU = (u[0], u[1], u[2], world[1], world[2], world[3]) in
+    (newU, pickMove newU)
   in
 
 let main =
     \world : worldState.
     \_     : ? .
-    let state = graphFromWorld world in
-    (0, step)
+    (makeUserState world, step)
   in
 
-trace 0 in main
+main

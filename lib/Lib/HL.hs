@@ -207,7 +207,7 @@ data Error =
   | ExceptedList Expr
   | ExceptedVariant Expr
   | BadVariantType Expr
-  | BadLetRecType Expr
+  | BadLetRecType Expr Type Type
   | UnknownTypeVariable Expr String
   | UnknownTypeVariableSubst String
   deriving(Show)
@@ -259,11 +259,11 @@ typecheck (me, mt) e = do
         Just _ -> throwError $ DuplicateVariable expr n
         Nothing -> do
           v' <- typecheck (Map.insert n t' me, mt) v
-          if exprType v' `type_eq` t
+          if exprType v' `type_eq` t'
             then do
               e' <- typecheck (Map.insert n t' me, mt) e
               return $ ELetRec (exprType e') n t' v' e'
-            else throwError $ BadLetRecType expr
+            else throwError $ BadLetRecType expr (exprType v') t'
     typecheck' (me, mt) expr@(EType _ n v e)   = do
       v' <- substituteType mt v
       case Map.lookup n mt of
@@ -353,7 +353,7 @@ typecheck (me, mt) e = do
       case exprType f' of
         TFunc tau sigma ->
           if tau `type_neq` exprType t'
-            then throwError $ FunctionTypeMismatch expr
+            then traceShow (tau, exprType t') $ throwError $ FunctionTypeMismatch expr
             else return $ EApp sigma f' t'
         _ -> throwError $ NonFunctionApplication expr
     typecheck' (me, mt) expr@(ETupleGet _ e i) = do
@@ -374,7 +374,7 @@ typecheck (me, mt) e = do
         TFunc a (TFunc sigma sigma') -> 
           if sigma `type_eq` sigma' && sigma `type_eq` exprType x'
             then return $ EListFold (TFunc (TList a) sigma) f' x'
-            else throwError $ FunctionTypeMismatch expr
+            else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
     typecheck' (me, mt) expr@(EListCons _ x xs) = do
       x' <- typecheck (me, mt) x

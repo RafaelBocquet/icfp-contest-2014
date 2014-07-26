@@ -33,7 +33,7 @@ compile filename = do
         Left err -> putStrLn . show $ err
         Right hl' -> do
           putStrLn "Compiles to : "
-          putStrLn . showLabelProgram . runHL $ HL.fullCompile hl'
+          -- putStrLn . showLabelProgram . runHL $ HL.fullCompile hl'
           putStrLn "UNLABEL :"
           case GCC.showProgram . runHL $ HL.fullCompile hl' of
             Left err -> putStrLn . show $ err
