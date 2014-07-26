@@ -4,14 +4,26 @@ import Options.Applicative
 import Control.Applicative
 import Control.Monad
 
-import Lib.GCC
+import Lib.GCC as GCC
+import Lib.GHC as GHC
+import Lib.GHCParser as GHC hiding (Parser)
 import Lib.HL as HL
-import Lib.HLParser hiding (Parser)
+import Lib.HLParser as HL hiding (Parser)
+
+ghc :: String -> IO ()
+ghc filename = do
+  fileContents <- readFile filename
+  case GHC.parse fileContents of
+    Left err -> putStrLn . show $ err
+    Right pr -> do
+      case GHC.showProgram pr of
+        Left err -> putStrLn $ show err
+        Right s ->  writeFile (filename ++ ".out") s
 
 compile :: String -> IO ()
 compile filename = do
   fileContents <- readFile filename
-  case parse fileContents of
+  case HL.parse fileContents of
     Left err -> putStrLn . show $ err
     Right hl -> do
       putStrLn "Parsed : "
@@ -23,14 +35,14 @@ compile filename = do
           putStrLn "Compiles to : "
           putStrLn . showLabelProgram . runHL $ HL.fullCompile hl'
           putStrLn "UNLABEL :"
-          case showProgram . runHL $ HL.fullCompile hl' of
+          case GCC.showProgram . runHL $ HL.fullCompile hl' of
             Left err -> putStrLn . show $ err
             Right s -> putStrLn s
 
 pacman :: String -> IO ()
 pacman filename = do
   fileContents <- readFile filename
-  case parse fileContents of
+  case HL.parse fileContents of
     Left err -> putStrLn . show $ err
     Right hl -> do
       putStrLn "Parsed : "
@@ -42,7 +54,7 @@ pacman filename = do
           putStrLn "Compiles to : "
           putStrLn . showLabelProgram . runHL $ HL.toPacman hl'
           putStrLn "UNLABEL :"
-          case showProgram . runHL $ HL.toPacman hl' of
+          case GCC.showProgram . runHL $ HL.toPacman hl' of
             Left err -> putStrLn . show $ err
             Right s -> writeFile (filename ++ ".out") s
 
@@ -53,6 +65,9 @@ optionParser = subparser $
       ) idm)
   <> (command "pacman" $ info (
         Main.pacman <$> argument str idm
+      ) idm)
+  <> (command "ghc" $ info (
+        Main.ghc <$> argument str idm
       ) idm)
 
 main :: IO ()

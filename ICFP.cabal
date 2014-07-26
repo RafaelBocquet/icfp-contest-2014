@@ -8,7 +8,9 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Lib.GCC,
                        Lib.HL,
-                       Lib.HLParser
+                       Lib.HLParser,
+                       Lib.GHC,
+                       Lib.GHCParser
   
   hs-source-dirs:      lib
   build-depends:       base,

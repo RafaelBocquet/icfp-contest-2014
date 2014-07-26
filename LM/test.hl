@@ -20,6 +20,7 @@ let lookup_I =
       ) l
     )[1]
   in
+
 let length_I = fold (\_:I. \acc:I. acc + 1) with 0 in
 
 let sum = fold (\m:I. \acc:I. acc + m) with 0 in
@@ -129,7 +130,11 @@ let distanceNearestPill  =
           fold (
             \s:I.
             \acc2:(I, I).
-            (acc2[0]+1, min acc2[1] (distance p (acc2[0],acc1[0])))
+            ( acc2[0]+1
+            , if or (s == mapPill) (s == mapPowerPill)
+                then min acc2[1] (distance p (acc2[0],acc1[0]))
+                else acc2[1]
+            )
           ) with (0, acc1[1])
         ) l
       in (acc1[0]+1, x[1])
@@ -142,7 +147,7 @@ let scoreMove = \world:worldState. \ws:(I, I). \d:direction.
     then
      let dPill = distanceNearestPill world next in
      let dGhost = distanceNearestGhost world next in
-     3*dGhost - 5 * dPill
+     3*dGhost - 5*dPill
     else 0-10000000
 in
 

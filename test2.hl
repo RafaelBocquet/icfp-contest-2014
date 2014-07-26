@@ -1,3 +1,0 @@
-
-let max = \a:I. \b:I. if a > b then a else b in
-(fold max with 0) (cons 1 with cons 2 with empty I)

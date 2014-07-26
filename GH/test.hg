@@ -1,0 +1,20 @@
+  MOV A 255
+  MOV B 0
+  MOV C 255
+
+%label1:
+  INC C
+  JGT %label2 [C] A
+             
+  MOV A [C]
+  MOV B C
+%label2:
+  JLT %label1 C 3
+
+  MOV A B
+  INT OutGhostDirection
+
+  INT GhostIndex
+  INT GhostDirection
+  INC [B]
+  HLT
