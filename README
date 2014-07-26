@@ -1,0 +1,19 @@
+Readme
+======
+
+ICFP Submission
+
+Team Piter
+
+Rafaël Bocquet & Simon Mauras
+
+ * submission is the OUTPUT file
+ * The ICFP folder contains haskell code, with a cabal project file
+ * the file ICFP/test.hl is 
+ * Compilation : 
+    cd ICFP
+    cabal sandbox init
+    cabal install --only-dependencies
+    cabal build
+    dist/build/ICFP/ICFP pacman test.hl
+    # Creates a test.hl.out file

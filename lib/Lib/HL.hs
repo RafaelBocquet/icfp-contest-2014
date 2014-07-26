@@ -17,6 +17,8 @@ import qualified Data.Set as Set
 
 import Lib.GCC as GCC hiding (Error)
 
+import Debug.Trace
+
 data Type = 
     TInt
   | TFunc Type Type
@@ -64,6 +66,8 @@ data Expr =
   | EListFold Type Expr Expr
   | EListCons Type Expr Expr
   | EListEmpty Type Type
+  | EListHead Type Expr
+  | EListTail Type Expr
 
 instance Show Expr where
   show (EConst _ i)      = show i
@@ -89,6 +93,8 @@ instance Show Expr where
   show (EListFold _ f x) = "fold " ++ "(" ++ show f ++ ")" ++ " with " ++ "(" ++ show x ++ ")"
   show (EListCons _ x xs) = "cons " ++ "(" ++ show x ++ ")" ++ " with " ++ "(" ++ show xs ++ ")"
   show (EListEmpty _ t) = "empty " ++ "(" ++ show t ++ ")"
+  show (EListHead _ t) = "head " ++ "(" ++ show t ++ ")"
+  show (EListTail _ t) = "tail " ++ "(" ++ show t ++ ")"
 
 exprType :: Expr -> Type
 exprType (EConst ty i)      = ty
@@ -114,6 +120,8 @@ exprType (ETuple ty (e:es)) = ty
 exprType (EListFold ty _ _) = ty
 exprType (EListCons ty _ _) = ty
 exprType (EListEmpty ty _) = ty
+exprType (EListHead ty _) = ty
+exprType (EListTail ty _) = ty
 
 withType :: (Type -> Type) -> Expr -> Expr
 withType fty (EConst ty i)      = EConst (fty ty) i
@@ -139,6 +147,8 @@ withType fty (ETuple ty (e:es)) = ETuple (fty ty) (e:es)
 withType fty (EListFold ty f x) = EListFold (fty ty) f x
 withType fty (EListCons ty x xs) = EListCons (fty ty) x xs
 withType fty (EListEmpty ty t) = EListEmpty (fty ty) t
+withType fty (EListHead ty l) = EListHead (fty ty) l
+withType fty (EListTail ty l) = EListTail (fty ty) l
 
 data Error =
     DuplicateVariable Expr String
@@ -150,12 +160,16 @@ data Error =
   | FunctionTypeMismatch Expr
   | BadTupleIndex Expr
   | ExceptedTuple Expr
+  | ExceptedList Expr
   | UnknownTypeVariable Expr String
+  | UnknownTypeVariableSubst String
   deriving(Show)
 
 substituteType :: Map String Type -> Type -> Either Error Type
 substituteType mp (TInt) = return TInt
-substituteType mp (TVar s) = return TInt
+substituteType mp (TVar s) = case Map.lookup s mp of
+  Nothing -> throwError $ UnknownTypeVariableSubst s
+  Just x -> return x
 substituteType mp (TOther) = return TOther
 substituteType mp (TFunc f t) = do
   f' <- substituteType mp f
@@ -266,8 +280,9 @@ typecheck (me, mt) e = do
       case Map.lookup n me of
         Just _ -> throwError $ DuplicateVariable expr n
         Nothing -> do
-          e' <- typecheck (Map.insert n t me, mt) e
-          return $ ELambda (TFunc t $ exprType e') n t e'
+          t' <- substituteType mt t
+          e' <- typecheck (Map.insert n t' me, mt) e
+          return $ ELambda (TFunc t $ exprType e') n t' e'
     typecheck' (me, mt) expr@(EApp _ f t) = do
       f' <- typecheck (me, mt) f
       t' <- typecheck (me, mt) t
@@ -293,7 +308,7 @@ typecheck (me, mt) e = do
       x' <- typecheck (me, mt) x
       case exprType f' of
         TFunc a (TFunc sigma sigma') -> 
-          if sigma == sigma'
+          if sigma == sigma' && sigma == exprType x'
             then return $ EListFold (TFunc (TList a) sigma) f' x'
             else throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
@@ -305,6 +320,16 @@ typecheck (me, mt) e = do
         else throwError $ FunctionTypeMismatch expr
     typecheck' (me, mt) expr@(EListEmpty _ t) = do
       return $ EListEmpty (TList t) t
+    typecheck' (me, mt) expr@(EListHead _ l) = do
+      l' <- typecheck (me, mt) l
+      case exprType l' of
+        TList a -> return $ EListHead a l'
+        _ -> throwError $ ExceptedList expr
+    typecheck' (me, mt) expr@(EListTail _ l) = do
+      l' <- typecheck (me, mt) l
+      case exprType l' of
+        TList a -> return $ EListTail (TList a) l'
+        _ -> throwError $ ExceptedList expr
 
 
 typecheck0 = typecheck (Map.empty, Map.empty)
@@ -356,6 +381,7 @@ runHL :: CMonad () -> [Instruction]
 runHL m = execWriter $ runStateT (runReaderT m $ CompilationState "." Map.empty) 0
 
 compile :: Expr -> CMonad ()
+compile e | exprType e == TOther = traceShow e $ error "error"
 compile (EConst _ i)          = tell [LDC $ VInt i]
 compile (EVar _ s)            = do
   state <- ask
@@ -385,7 +411,7 @@ compile (EEq _ e1 e2)         = do
   compile e1
   compile e2
   tell [CEQ]
-compile (ENEq _ e1 e2)        = error "unimplemented ENEq"
+compile (ENEq _ e1 e2)        = compile $ EApp TInt (EVar (TFunc TInt TInt) "not") $ EEq TInt e1 e2
 compile (EGTE _ e1 e2)        = do
   compile e1
   compile e2
@@ -394,8 +420,8 @@ compile (EGT _ e1 e2)         = do
   compile e1
   compile e2
   tell [CGT]
-compile (ELT _ e1 e2)         = error "unimplemented ELT"
-compile (ELTE _ e1 e2)        = error "unimplemented ELTE"
+compile (ELT _ e1 e2)         = compile $ EApp TInt (EVar (TFunc TInt TInt) "not") $ EGTE TInt e1 e2
+compile (ELTE _ e1 e2)        = compile $ EApp TInt (EVar (TFunc TInt TInt) "not") $ EGT TInt e1 e2
 compile (EIf _ c b1 b2)      = do
   id <- get
   increaseState
@@ -432,6 +458,7 @@ compile (ETupleGet _ e i)    = do
   compile e
   case exprType e of
     TTuple ts -> compileTupleGet i ts
+    err -> traceShow (e, err) $ error "error"
   where
     compileTupleGet 0 (t:[]) = return ()
     compileTupleGet 0 (t:ts) = tell [CAR]
@@ -506,6 +533,12 @@ compile (EListCons _ x xs)         = do
   compile xs
   tell [CONS]
 compile (EListEmpty _ _)           = tell [LDC (VInt 0)]
+compile (EListHead _ l)           = do
+  compile l
+  tell [CAR]
+compile (EListTail _ l)           = do
+  compile l
+  tell [CDR]
 
 fullCompile :: Expr -> CMonad ()
 fullCompile e = do

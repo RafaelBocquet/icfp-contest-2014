@@ -110,16 +110,22 @@ parseExpression4 = choice
   , EConst TOther . fromIntegral <$> lexParser intParser
   ]
 
+parseApplications :: Maybe Expr -> Expr -> Parser Expr
+parseApplications e1 e2 = choice
+  [ do
+      e3 <- parseExpression4
+      case e1 of Nothing -> parseApplications (Just e2) e3; Just x -> parseApplications (Just $ EApp TOther x e2) e3
+  , do
+      i <- braParser intParser
+      parseApplications e1 $ ETupleGet TOther e2 (fromIntegral i)
+  , return $ case e1 of Nothing -> e2 ; Just x -> EApp TOther x e2
+  ]
+
 parseExpression3 :: Parser Expr
 parseExpression3 = do
   e1 <- parseExpression4
   choice
-    [ do
-        e2 <- parseExpression3
-        return $ EApp TOther e1 e2
-    , do
-        i <- braParser intParser
-        return $ ETupleGet TOther e1 (fromIntegral i)
+    [ parseApplications Nothing e1
     , return e1
     ]
 
@@ -234,6 +240,14 @@ parseExpression = choice
       lexParser $ reParser "empty"
       t <- parseType
       return $ EListEmpty TOther t
+  , lexParser $ do
+      lexParser $ reParser "head"
+      l <- parseExpression
+      return $ EListHead TOther l
+  , lexParser $ do
+      lexParser $ reParser "tail"
+      l <- parseExpression
+      return $ EListTail TOther l
   , parseExpression0
   ]
 
