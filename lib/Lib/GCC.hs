@@ -24,7 +24,7 @@ data Instruction =
   | DUM Value
   | RAP Value
   | STOP
-  | TSEL Value Value | TAP | TRAP   -- Tail call extension
+  | TSEL Value Value | TAP Value | TRAP Value   -- Tail call extension
   | ST                  -- Pascal extension
   | DBUG | BRK          -- Debug extension
 
@@ -93,8 +93,12 @@ showInstruction mp (TSEL x y)   = do
   x' <- showValue mp x
   y' <- showValue mp y
   return $ "TSEL " ++ x' ++ " " ++ y' ++ "\n"
-showInstruction mp (TAP)        = return "TAP\n"
-showInstruction mp (TRAP)       = return "TRAP\n"
+showInstruction mp (TAP x)      = do
+  x' <- showValue mp x
+  return $ "TAP " ++ x' ++ "\n"
+showInstruction mp (TRAP x)     = do
+  x' <- showValue mp x
+  return $ "TRAP " ++ x' ++ "\n"
 showInstruction mp (ST)         = return "ST\n"
 showInstruction mp (DBUG)       = return "DBUG\n"
 showInstruction mp (BRK)        = return "BRK\n"
@@ -132,8 +136,8 @@ showLabelInstruction  (DUM x)      = "DUM " ++ showLabelValue x ++ "\n"
 showLabelInstruction  (RAP x)      = "RAP " ++ showLabelValue x ++ "\n"
 showLabelInstruction  (STOP)       = "STOP\n"
 showLabelInstruction  (TSEL x y)   = "TSEL " ++ showLabelValue x ++ " " ++ showLabelValue y ++ "\n"
-showLabelInstruction  (TAP)        = "TAP\n"
-showLabelInstruction  (TRAP)       = "TRAP\n"
+showLabelInstruction  (TAP x)      = "TAP " ++ showLabelValue x ++ "\n"
+showLabelInstruction  (TRAP x)     = "TRAP " ++ showLabelValue x ++ "\n"
 showLabelInstruction  (ST)         = "ST\n"
 showLabelInstruction  (DBUG)       = "DBUG\n"
 showLabelInstruction  (BRK)        = "BRK\n"

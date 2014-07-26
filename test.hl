@@ -4,6 +4,25 @@
 // let or  = \a:I. \b:I. if b then a else 1 in
 // let and = \a:I. \b:I. if b then 0 else a in
 
+let lookup_I =
+    \n:I. \l:[I].
+    (
+      (
+        fold (\m:I. \acc:(I, I).
+          ( acc[0] - 1
+          , if acc[0]
+              then acc[1]
+              else m
+          )
+        ) with (n, 0)
+      ) l
+    )[1]
+  in
+
+// let length_I = fold (\_:I. \acc:I. acc + 1) with 0 in
+
+// let sum = fold (\m:I. \acc:I. acc + m) with 0 in
+
 // Game related definitions
 
 type map          = [[I]] in
@@ -42,16 +61,18 @@ type stepType = userState -> worldState -> (userState, direction) in
 
 type mainType = worldState -> ? -> (userState, stepType) in
 
-let step =
-    \u     : userState.
-    \world : worldState.
-    (u, 1)
-  in
+// let step =
+//     \u     : userState.
+//     \world : worldState.
+//     (u, 1)
+//   in
 
-let main =
-    \world : worldState.
-    \_     : ? .
-    (0, step)
-  in
+// let main =
+//     \world : worldState.
+//     \_     : ? .
+//     (0, step)
+//   in
 
-main
+let li = cons 4 with (cons 10 with (cons 42 with (cons 98 with (empty I)))) in
+
+(lookup_I 2) li

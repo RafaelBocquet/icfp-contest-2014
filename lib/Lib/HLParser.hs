@@ -39,6 +39,8 @@ hlLanguageDef = emptyDef
       , "if"
       , "then"
       , "else"
+      , "fold"
+      , "with"
       ]
   , reservedOpNames =
       [ "->"
@@ -64,7 +66,7 @@ TokenParser {
   brackets      = braParser,
   lexeme        = lexParser,
   commaSep1     = commaParser,
-  integer       = intParser,
+  natural       = intParser,
   whiteSpace    = wsParser
 } = hlTokenParser
 
@@ -101,11 +103,11 @@ parseExpression4 = choice
   [ lexParser $ parParser $ do
       ts <- commaParser parseExpression
       return $ case ts of
-        []   -> ETuple []
+        []   -> ETuple TOther []
         e:[] -> e
-        es   -> ETuple es
-  , EConst . fromIntegral <$> lexParser intParser
-  , EVar <$> lexParser idParser
+        es   -> ETuple TOther es
+  , EVar TOther <$> lexParser idParser
+  , EConst TOther . fromIntegral <$> lexParser intParser
   ]
 
 parseExpression3 :: Parser Expr
@@ -114,10 +116,10 @@ parseExpression3 = do
   choice
     [ do
         e2 <- parseExpression3
-        return $ EApp e1 e2
+        return $ EApp TOther e1 e2
     , do
         i <- braParser intParser
-        return $ ETupleGet e1 (fromIntegral i)
+        return $ ETupleGet TOther e1 (fromIntegral i)
     , return e1
     ]
 
@@ -126,13 +128,13 @@ parseExpression2 = do
   e1 <- parseExpression3
   choice
     [ do
-        lexParser $ reOpParser "+"
+        lexParser $ reOpParser "*"
         e2 <- parseExpression2
-        return $ EAdd e1 e2
+        return $ EMul TOther e1 e2
     , do
-        lexParser $ reOpParser "-"
+        lexParser $ reOpParser "/"
         e2 <- parseExpression2
-        return $ ESub e1 e2
+        return $ EDiv TOther e1 e2
     , return e1
     ]
 
@@ -141,13 +143,13 @@ parseExpression1 = do
   e1 <- parseExpression2
   choice
     [ do
-        lexParser $ reOpParser "*"
+        lexParser $ reOpParser "+"
         e2 <- parseExpression1
-        return $ EMul e1 e2
+        return $ EAdd TOther e1 e2
     , do
-        lexParser $ reOpParser "/"
+        lexParser $ reOpParser "-"
         e2 <- parseExpression1
-        return $ EDiv e1 e2
+        return $ ESub TOther e1 e2
     , return e1
     ]
 
@@ -158,48 +160,48 @@ parseExpression0 = do
     [ do
         lexParser $ reOpParser "=="
         e2 <- parseExpression1
-        return $ EEq e1 e2
+        return $ EEq TOther e1 e2
     , do
         lexParser $ reOpParser "/="
         e2 <- parseExpression1
-        return $ ENEq e1 e2
+        return $ ENEq TOther e1 e2
     , do
         lexParser $ reOpParser "<="
         e2 <- parseExpression1
-        return $ ELTE e1 e2
+        return $ ELTE TOther e1 e2
     , do
         lexParser $ reOpParser "<"
         e2 <- parseExpression1
-        return $ ELT e1 e2
+        return $ ELT TOther e1 e2
     , do
         lexParser $ reOpParser ">="
         e2 <- parseExpression1
-        return $ EGTE e1 e2
+        return $ EGTE TOther e1 e2
     , do
         lexParser $ reOpParser ">"
         e2 <- parseExpression1
-        return $ EGT e1 e2
+        return $ EGT TOther e1 e2
     , return e1
     ]
 
 parseExpression :: Parser Expr
 parseExpression = choice
-  [ lexParser $ do
+  [ do
       lexParser $ reParser "let"
       x <- idParser
       lexParser $ reOpParser "="
       v <- parseExpression
       lexParser $ reParser "in"
       e <- parseExpression
-      return $ ELet x v e
-  , lexParser $ do
+      return $ ELet TOther x v e
+  , do
       lexParser $ reParser "type"
       x <- idParser
       lexParser $ reOpParser "="
       v <- parseType
       lexParser $ reParser "in"
       e <- parseExpression
-      return $ EType x v e
+      return $ EType TOther x v e
   , do
       lexParser $ reParser "if"
       e <- parseExpression
@@ -207,7 +209,7 @@ parseExpression = choice
       b1 <- parseExpression
       lexParser $ reParser "else"
       b2 <- parseExpression
-      return $ EIf e b1 b2
+      return $ EIf TOther e b1 b2
   , do
       lexParser $ reOpParser "\\"
       id <- idParser
@@ -215,8 +217,24 @@ parseExpression = choice
       ty <- parseType
       lexParser $ reOpParser "."
       e <- parseExpression
-      return $ ELambda id ty e
-  , parseExpression1
+      return $ ELambda TOther id ty e
+  , lexParser $ do
+      lexParser $ reParser "fold"
+      f <- parseExpression
+      lexParser $ reParser "with"
+      x <- parseExpression
+      return $ EListFold TOther f x
+  , lexParser $ do
+      lexParser $ reParser "cons"
+      f <- parseExpression
+      lexParser $ reParser "with"
+      x <- parseExpression
+      return $ EListCons TOther f x
+  , lexParser $ do
+      lexParser $ reParser "empty"
+      t <- parseType
+      return $ EListEmpty TOther t
+  , parseExpression0
   ]
 
 mainParser :: Parser Expr

@@ -17,13 +17,15 @@ compile filename = do
       putStrLn "Parsed : "
       putStrLn . show $ hl
       putStrLn "Typechecks to : "
-      putStrLn . show $ typecheck0 hl
-      putStrLn "Compiles to : "
-      putStrLn . showLabelProgram . runHL $ HL.fullCompile hl
-      putStrLn "UNLABEL : "
-      case showProgram . runHL $ HL.fullCompile hl of
+      case typecheck0 hl of
         Left err -> putStrLn . show $ err
-        Right s -> putStrLn s
+        Right hl' -> do
+          putStrLn "Compiles to : "
+          putStrLn . showLabelProgram . runHL $ HL.fullCompile hl'
+          putStrLn "UNLABEL :"
+          case showProgram . runHL $ HL.fullCompile hl' of
+            Left err -> putStrLn . show $ err
+            Right s -> putStrLn s
 
 pacman :: String -> IO ()
 pacman filename = do
@@ -36,13 +38,13 @@ pacman filename = do
       putStrLn "Typechecks to : "
       case typecheck0 hl of
         Left err -> putStrLn . show $ err
-        Right _ -> do
+        Right hl' -> do
           putStrLn "Compiles to : "
-          putStrLn . showLabelProgram . runHL $ HL.toPacman hl
-          case showProgram . runHL $ HL.toPacman hl of
+          putStrLn . showLabelProgram . runHL $ HL.toPacman hl'
+          putStrLn "UNLABEL :"
+          case showProgram . runHL $ HL.toPacman hl' of
             Left err -> putStrLn . show $ err
-            Right s -> do
-              writeFile (filename ++ ".out") s
+            Right s -> writeFile (filename ++ ".out") s
 
 optionParser :: Parser (IO ())
 optionParser = subparser $
