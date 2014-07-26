@@ -27,17 +27,17 @@ compile filename = do
     Left err -> putStrLn . show $ err
     Right hl -> do
       putStrLn "Parsed : "
-      putStrLn . show $ hl
+      -- putStrLn . show $ hl
       putStrLn "Typechecks to : "
       case typecheck0 hl of
         Left err -> putStrLn . show $ err
         Right hl' -> do
           putStrLn "Compiles to : "
-          putStrLn . showLabelProgram . runHL $ HL.fullCompile hl'
+          -- putStrLn . showLabelProgram . runHL $ HL.fullCompile hl'
           putStrLn "UNLABEL :"
           case GCC.showProgram . runHL $ HL.fullCompile hl' of
             Left err -> putStrLn . show $ err
-            Right s -> putStrLn s
+            Right s -> writeFile (filename ++ ".out") s
 
 pacman :: String -> IO ()
 pacman filename = do
@@ -46,13 +46,13 @@ pacman filename = do
     Left err -> putStrLn . show $ err
     Right hl -> do
       putStrLn "Parsed : "
-      putStrLn . show $ hl
+      -- putStrLn . show $ hl
       putStrLn "Typechecks to : "
       case typecheck0 hl of
         Left err -> putStrLn . show $ err
         Right hl' -> do
           putStrLn "Compiles to : "
-          putStrLn . showLabelProgram . runHL $ HL.toPacman hl'
+          -- putStrLn . showLabelProgram . runHL $ HL.toPacman hl'
           putStrLn "UNLABEL :"
           case GCC.showProgram . runHL $ HL.toPacman hl' of
             Left err -> putStrLn . show $ err

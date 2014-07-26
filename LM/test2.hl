@@ -1,0 +1,3 @@
+
+let aaa = (natfold (\a:I. \b:[I]. cons a with b) with empty I) 10 in
+aaa

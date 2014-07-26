@@ -206,20 +206,6 @@ let pickMove = \world:worldState. \ws:(I, I).
             else dirLeft
   in
 
-// Quad-tree
-
-type qt1   = I in
-type qt2   = ((qt1, qt1), (qt1, qt1)) in
-type qt4   = ((qt2, qt2), (qt2, qt2)) in
-type qt8   = ((qt4, qt4), (qt4, qt4)) in
-type qt16  = ((qt8, qt8), (qt8, qt8)) in
-type qt32  = ((qt16, qt16), (qt16, qt16)) in
-type qt64  = ((qt32, qt32), (qt32, qt32)) in
-type qt128 = ((qt64, qt64), (qt64, qt64)) in
-type qt256 = ((qt128, qt128), (qt128, qt128)) in
-
-let qt256_at 
-
 // Map graph
 
 type node = (I, I) in
@@ -233,29 +219,29 @@ let nodeOrVertexNode = 1 in
 let nodeOrVertexVertex = 2 in
 type graph = ([node], [vertex], [[nodeOrVertex]]) in
 
-// let graphFromWorld = \world:worldState. 
-//   let wSize = worldSize world in
-//   let nodeList =
-//     ( natfold
-//       ( \x_:I.
-//         \acc_:[node].
-//         let x = wSize[0]-x_ in
-//         ( natfold
-//           ( \y_:I.
-//             \acc:[node].
-//             let y = wSize[1]-y_ in
-//             if not (isPassage world (x, y))
-//               then acc
-//               else 
-//           )
-//           with acc_
-//         ) wSize[1]
-//       )
-//       with empty [node]
-//     ) wSize[0]
-//     in
-//   (empty I, empty I, empty [I])
-//   in
+let graphFromWorld = \world:worldState. 
+  let wSize = worldSize world in
+  let nodeList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if not (isPassage world (x, y))
+              then acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  (empty I, empty I, empty [I])
+  in
 
 
 // ...

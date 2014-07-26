@@ -26,6 +26,7 @@ data Type =
   | TTuple [Type]
   | TVar String
   | TOther
+  | TVariant [Type]
   deriving(Eq)
 
 isFunctionType :: Type -> Bool
@@ -41,6 +42,7 @@ instance Show Type where
   show (TList a)        = "[" ++ show a ++ "]"
   show (TTuple [])      = "()"
   show (TTuple (t:ts))  = "(" ++ show t ++ (concat $ ((", " ++) . show) <$> ts)  ++ ")"
+  show (TVariant (t:ts))  = "<" ++ show t ++ (concat $ ((", " ++) . show) <$> ts)  ++ ">"
   show TOther           = "?"
 
 data Expr =
@@ -68,6 +70,9 @@ data Expr =
   | EListEmpty Type Type
   | EListHead Type Expr
   | EListTail Type Expr
+  | ENatFold Type Expr Expr
+  | EVariantConstruct Type Type Int Expr
+  | EVariantDestruct Type [Expr]
 
 instance Show Expr where
   show (EConst _ i)      = show i
@@ -95,6 +100,9 @@ instance Show Expr where
   show (EListEmpty _ t) = "empty " ++ "(" ++ show t ++ ")"
   show (EListHead _ t) = "head " ++ "(" ++ show t ++ ")"
   show (EListTail _ t) = "tail " ++ "(" ++ show t ++ ")"
+  show (ENatFold _ f x) = "natfold " ++ "(" ++ show f ++ ")" ++ " with " ++ "(" ++ show x ++ ")"
+  show (EVariantConstruct _ t i e) = "make " ++ "(" ++ show t ++ ")" ++ " " ++ show i ++ " " ++ "(" ++ show e ++ ")"
+  show (EVariantDestruct _ (f:fs)) = "destruct " ++ "(" ++ show f ++ (concat $ ((", " ++) . show) <$> fs)  ++ ")"
 
 exprType :: Expr -> Type
 exprType (EConst ty i)      = ty
@@ -122,6 +130,9 @@ exprType (EListCons ty _ _) = ty
 exprType (EListEmpty ty _) = ty
 exprType (EListHead ty _) = ty
 exprType (EListTail ty _) = ty
+exprType (ENatFold ty _ _) = ty
+exprType (EVariantConstruct ty _ _ _) = ty
+exprType (EVariantDestruct ty _) = ty
 
 withType :: (Type -> Type) -> Expr -> Expr
 withType fty (EConst ty i)      = EConst (fty ty) i
@@ -149,6 +160,9 @@ withType fty (EListCons ty x xs) = EListCons (fty ty) x xs
 withType fty (EListEmpty ty t) = EListEmpty (fty ty) t
 withType fty (EListHead ty l) = EListHead (fty ty) l
 withType fty (EListTail ty l) = EListTail (fty ty) l
+withType fty (ENatFold ty f x) = ENatFold (fty ty) f x
+withType fty (EVariantConstruct ty a b c) = EVariantConstruct (fty ty) a b c
+withType fty (EVariantDestruct ty l) = EVariantDestruct (fty ty) l
 
 data Error =
     DuplicateVariable Expr String
@@ -161,6 +175,8 @@ data Error =
   | BadTupleIndex Expr
   | ExceptedTuple Expr
   | ExceptedList Expr
+  | ExceptedVariant Expr
+  | BadVariantType Expr
   | UnknownTypeVariable Expr String
   | UnknownTypeVariableSubst String
   deriving(Show)
@@ -178,6 +194,11 @@ substituteType mp (TFunc f t) = do
 substituteType mp (TList t) = TList <$> substituteType mp t
 substituteType mp (TTuple ts) =
   TTuple <$> foldrM (\t ts' -> do
+      t' <- substituteType mp t
+      return $ t':ts'
+    ) [] ts
+substituteType mp (TVariant ts) =
+  TVariant <$> foldrM (\t ts' -> do
       t' <- substituteType mp t
       return $ t':ts'
     ) [] ts
@@ -330,6 +351,38 @@ typecheck (me, mt) e = do
       case exprType l' of
         TList a -> return $ EListTail (TList a) l'
         _ -> throwError $ ExceptedList expr
+    typecheck' (me, mt) expr@(ENatFold _ f x) = do
+      f' <- typecheck (me, mt) f
+      x' <- typecheck (me, mt) x
+      case exprType f' of
+        TFunc TInt (TFunc sigma sigma') -> 
+          if sigma == sigma' && sigma == exprType x'
+            then return $ ENatFold (TFunc TInt sigma) f' x'
+            else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
+        _ -> throwError $ NonFunctionApplication expr
+    typecheck' (me, mt) expr@(EVariantConstruct _ ty i e) = do
+      ty' <- substituteType mt ty
+      case ty' of
+        TVariant ts ->
+          if 0 <= i && i < length ts
+            then do
+              e' <- typecheck (me, mt) e
+              if exprType e' == ts !! i
+                then return $ EVariantConstruct ty' ty' i e'
+                else throwError $ BadVariantType expr
+            else throwError $ BadVariantType expr
+        _ -> throwError $ ExceptedVariant expr
+    typecheck' (me, mt) expr@(EVariantDestruct _ fs) = do
+      fs' <- typecheck (me, mt) `mapM` fs
+      l <- forM (exprType <$> fs') $ \ty ->
+        case ty of
+          TFunc tau sigma -> return (tau, sigma)
+          _ -> throwError $ NonFunctionApplication expr
+      let ts = fst <$> l 
+      let ss = snd <$> l 
+      if all (== (ss !! 0)) ss
+        then return $ EVariantDestruct (TFunc (TVariant ts) (ss !! 0)) fs'
+        else throwError $ NonFunctionApplication expr
 
 
 typecheck0 = typecheck (Map.empty, Map.empty)
@@ -554,6 +607,111 @@ compile (EListHead _ l)           = do
 compile (EListTail _ l)           = do
   compile l
   tell [CDR]
+compile (ENatFold _ f x)         = do
+  id <- get
+  increaseState
+  let blockName = "fold." ++ show id
+  bbegin <- blockBegin blockName
+  bend <- blockEnd blockName
+  
+  id' <- get
+  increaseState
+  let lambdaBlock = "lambda." ++ show id'
+  lambdaBegin <- blockBegin lambdaBlock
+  lambdaEnd <- blockEnd lambdaBlock
+  
+  id' <- get
+  increaseState
+  let lambda2Block = "lambda2." ++ show id'
+  lambda2Begin <- blockBegin lambda2Block
+  lambda2End <- blockEnd lambda2Block
+
+  tell [LDC $ VInt 0, TSEL (VLabel lambda2End) (VLabel lambda2End)]
+  block blockName $ bindVariable "?" $ bindVariable "?" $ bindVariable "?" $ do
+    thenbegin <- blockBegin "then"
+    elsebegin <- blockBegin "else"
+    tell [LD (VInt 0) (VInt 0), CDR, TSEL (VLabel thenbegin) (VLabel elsebegin)]
+    block "then" $ do
+      tell
+        [ LD (VInt 0) (VInt 0)
+        , CAR
+        , LD (VInt 0) (VInt 0)
+        , CDR
+        ]
+      compile f
+      tell
+        [ AP (VInt 1)
+        , AP (VInt 1)
+        , LD (VInt 0) (VInt 0)
+        , CDR
+        , LDC (VInt 1)
+        , SUB
+        , CONS
+        , LD (VInt 1) (VInt 0)
+        , TAP (VInt 1)
+        ]
+    block "else" $ tell
+      [ LD (VInt 0) (VInt 0)
+      , CAR
+      , RTN
+      ]
+  block lambdaBlock $ bindVariable "?" $ bindVariable "?" $ do
+    compile x
+    tell
+      [ LD (VInt 1) (VInt 0)
+      , CONS
+      , LD (VInt 0) (VInt 0)
+      , AP (VInt 1)
+      , RTN
+      ]
+  block lambda2Block $ bindVariable "?" $ do
+    tell
+      [ DUM (VInt 1)
+      , LDF (VLabel bbegin)
+      , LDF (VLabel lambdaBegin)
+      , RAP (VInt 1)
+      , RTN
+      ]
+  tell [LDF (VLabel lambda2Begin)]
+compile (EVariantConstruct _ ty i e) = do
+  tell [LDC (VInt i)]
+  compile e
+  tell [CONS]
+compile (EVariantDestruct _ fs) = do
+  let n = length fs
+  id <- get
+  increaseState
+  let blockName = "destruct." ++ show id
+  bbegin <- blockBegin blockName
+  bend <- blockEnd blockName
+  tell [LDC $ VInt 0, TSEL (VLabel bend) (VLabel bend)]
+  block blockName $ bindVariable "?" $ do
+    tell [LD (VInt 0) (VInt 0), CDR]
+    compileVariantDestruct 0 (n-1)
+    tell [RTN]
+  tell [LDF $ VLabel bbegin]
+    where
+      compileVariantDestruct i j
+        | i == j    = do
+            compile (fs !! i)
+            tell [AP (VInt 1)]
+        | otherwise = do
+            let k = (i+j)`div`2
+            id <- get
+            increaseState
+            let blockName = "if." ++ show id
+            bend <- blockEnd blockName
+            thenbegin <- blockBegin $ "if." ++ show id ++ ".then"
+            elsebegin <- blockBegin $ "if." ++ show id ++ ".else"
+            tell [LDC (VInt 0), TSEL (VLabel bend) (VLabel bend)]
+            block blockName $ do
+              block thenbegin $ compileVariantDestruct (k+1) j
+              block elsebegin $ compileVariantDestruct i k
+            tell [LD (VInt 0) (VInt 0), CAR, LDC (VInt k), CGT, SEL (VLabel thenbegin) (VLabel elsebegin)]
+
+
+
+
 
 fullCompile :: Expr -> CMonad ()
 fullCompile e = do

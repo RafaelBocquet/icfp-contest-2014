@@ -40,6 +40,7 @@ hlLanguageDef = emptyDef
       , "then"
       , "else"
       , "fold"
+      , "natfold"
       , "with"
       ]
   , reservedOpNames =
@@ -67,7 +68,8 @@ TokenParser {
   lexeme        = lexParser,
   commaSep1     = commaParser,
   natural       = intParser,
-  whiteSpace    = wsParser
+  whiteSpace    = wsParser,
+  angles        = angParser
 } = hlTokenParser
 
 parseType :: Parser Type
@@ -86,6 +88,12 @@ parseType = do
           []   -> TOther
           t:[] -> t
           ts   -> TTuple ts
+    , lexParser $ angParser $ do
+        ts <- commaParser parseType
+        return $ case ts of
+          []   -> TOther
+          t:[] -> t
+          ts   -> TVariant ts
     , lexParser $ braParser $ do
         ty <- parseType
         return $ TList ty
@@ -231,6 +239,12 @@ parseExpression = choice
       x <- parseExpression
       return $ EListFold TOther f x
   , lexParser $ do
+      lexParser $ reParser "natfold"
+      f <- parseExpression
+      lexParser $ reParser "with"
+      x <- parseExpression
+      return $ ENatFold TOther f x
+  , lexParser $ do
       lexParser $ reParser "cons"
       f <- parseExpression
       lexParser $ reParser "with"
@@ -248,6 +262,17 @@ parseExpression = choice
       lexParser $ reParser "tail"
       l <- parseExpression
       return $ EListTail TOther l
+  , lexParser $ do
+      lexParser $ reParser "make"
+      vty <- parseType
+      i <- intParser
+      e <- parseExpression
+      return $ EVariantConstruct TOther vty (fromIntegral i) e
+  , lexParser $ do
+      lexParser $ reParser "destruct"
+      lexParser $ parParser $ do
+        es <- commaParser parseExpression
+        return $ EVariantDestruct TOther es
   , parseExpression0
   ]
 

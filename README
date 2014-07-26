@@ -9,7 +9,8 @@ Rafaël Bocquet & Simon Mauras
 
  * submission is the OUTPUT file
  * The ICFP folder contains haskell code, with a cabal project file
- * the file ICFP/test.hl is 
+ * Lambda Man files in LM
+ * Ghost files in GH
  * Compilation : 
     cd ICFP
     cabal sandbox init
