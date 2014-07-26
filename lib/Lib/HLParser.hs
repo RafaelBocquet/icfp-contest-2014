@@ -42,6 +42,10 @@ hlLanguageDef = emptyDef
       , "fold"
       , "natfold"
       , "with"
+      , "trace"
+      , "letrec"
+      , "empty"
+      , "isempty"
       ]
   , reservedOpNames =
       [ "->"
@@ -80,7 +84,7 @@ parseType = do
         return TInt
     , lexParser $ do
         reOpParser "?"
-        return TOther
+        return TAny
     , TVar <$> lexParser idParser
     , lexParser $ parParser $ do
         ts <- commaParser parseType
@@ -209,6 +213,16 @@ parseExpression = choice
       e <- parseExpression
       return $ ELet TOther x v e
   , do
+      lexParser $ reParser "letrec"
+      x <- idParser
+      lexParser $ reOpParser ":"
+      t <- parseType
+      lexParser $ reOpParser "="
+      v <- parseExpression
+      lexParser $ reParser "in"
+      e <- parseExpression
+      return $ ELetRec TOther x t v e
+  , do
       lexParser $ reParser "type"
       x <- idParser
       lexParser $ reOpParser "="
@@ -255,6 +269,10 @@ parseExpression = choice
       t <- parseType
       return $ EListEmpty TOther t
   , lexParser $ do
+      lexParser $ reParser "isempty"
+      t <- parseExpression
+      return $ EListIsEmpty TOther t
+  , lexParser $ do
       lexParser $ reParser "head"
       l <- parseExpression
       return $ EListHead TOther l
@@ -268,6 +286,12 @@ parseExpression = choice
       i <- intParser
       e <- parseExpression
       return $ EVariantConstruct TOther vty (fromIntegral i) e
+  , do
+      lexParser $ reParser "trace"
+      a <- parseExpression
+      lexParser $ reParser "in"
+      b <- parseExpression
+      return $ ETrace TOther a b
   , lexParser $ do
       lexParser $ reParser "destruct"
       lexParser $ parParser $ do

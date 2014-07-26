@@ -1,3 +1,14 @@
-
-let aaa = (natfold (\a:I. \b:[I]. cons a with b) with empty I) 10 in
-aaa
+let not = \b:I.if b then 0 else 1 in
+letrec __internal_btree_set_I_fusion_list : [I] -> [I] -> [I] = \l:[I]. \l_:[I].
+  if isempty l
+    then trace 0 in l_
+  else if isempty l_
+    then trace 1 in l
+  else if (head l) <= (head l_)
+    then
+      trace 2 in (cons (head l) with (__internal_btree_set_I_fusion_list (tail l) l_))
+    else
+      trace 3 in (cons (head l_) with (__internal_btree_set_I_fusion_list (tail l_) l))
+  in
+trace 0 in
+__internal_btree_set_I_fusion_list (cons 2 with empty I) (cons 1 with cons 48 with empty I)

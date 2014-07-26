@@ -1,3 +1,5 @@
+
+%notdeadend:
 MOV C [20]
 MOV D [21]
 MOV E [21]
@@ -20,8 +22,8 @@ INC F
   MOV B [21]
   XOR A [10]
   XOR B [11]
-OR A B
-JEQ %notdeadend A 0
+  OR A B
+  JEQ %notdeadend A 0
   
   DEC C
   MOV A C
@@ -33,5 +35,3 @@ MOV PC %while
 
 %deadend:
 MOV [3] 0
-%notdeadend:
-// 

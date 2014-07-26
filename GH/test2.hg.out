@@ -8,21 +8,12 @@
   MOV A,C
   MOV B,D
   INT 7
-  JGT 28,A,0
+  JGT 0,A,0
   MOV A,C
   MOV B,F
   INT 7
-  JGT 28,A,0
+  JGT 0,A,0
   MOV A,[20]
   MOV B,[21]
   XOR A,[10]
   XOR B,[11]
-  OR A,B
-  JEQ 28,A,0
-  DEC C
-  MOV A,C
-  MOV B,E
-  INT 7
-  JEQ 27,A,0
-  MOV PC,7
-  MOV [3],0

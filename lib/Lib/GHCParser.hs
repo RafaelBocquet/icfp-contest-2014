@@ -181,6 +181,13 @@ parseInstruction = choice
       spaces
       return $ AND a b
   , do
+      try $ string "OR"
+      spaces
+      a <- parseData
+      b <- parseData
+      spaces
+      return $ OR a b
+  , do
       try $ string "XOR"
       spaces
       a <- parseData

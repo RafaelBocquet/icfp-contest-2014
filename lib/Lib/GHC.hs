@@ -66,6 +66,7 @@ data Instruction =
   | MUL Data Data
   | DIV Data Data
   | AND Data Data
+  | OR Data Data
   | XOR Data Data
   | JLT Data Data Data
   | JEQ Data Data Data
@@ -79,6 +80,7 @@ instance Show Instruction where
   show (INC a)      = "  INC " ++ show a ++ "\n" 
   show (DEC a)      = "  DEC " ++ show a ++ "\n" 
   show (ADD a b)    = "  ADD " ++ show a ++ "," ++ show b ++ "\n" 
+  show (OR a b)     = "  OR " ++ show a ++ "," ++ show b ++ "\n" 
   show (SUB a b)    = "  SUB " ++ show a ++ "," ++ show b ++ "\n" 
   show (MUL a b)    = "  MUL " ++ show a ++ "," ++ show b ++ "\n" 
   show (DIV a b)    = "  DIV " ++ show a ++ "," ++ show b ++ "\n" 
@@ -122,6 +124,7 @@ unlabelInstruction mp (SUB a b)    = (liftM2 SUB) (unlabelData mp a) (unlabelDat
 unlabelInstruction mp (MUL a b)    = (liftM2 MUL) (unlabelData mp a) (unlabelData mp b)
 unlabelInstruction mp (DIV a b)    = (liftM2 DIV) (unlabelData mp a) (unlabelData mp b)
 unlabelInstruction mp (AND a b)    = (liftM2 AND) (unlabelData mp a) (unlabelData mp b)
+unlabelInstruction mp (OR a b)    = (liftM2 OR) (unlabelData mp a) (unlabelData mp b)
 unlabelInstruction mp (XOR a b)    = (liftM2 XOR) (unlabelData mp a) (unlabelData mp b)
 unlabelInstruction mp (JLT a b c)  = (liftM3 JLT) (unlabelData mp a) (unlabelData mp b) (unlabelData mp c)
 unlabelInstruction mp (JEQ a b c)  = (liftM3 JEQ) (unlabelData mp a) (unlabelData mp b) (unlabelData mp c)

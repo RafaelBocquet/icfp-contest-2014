@@ -26,8 +26,25 @@ data Type =
   | TTuple [Type]
   | TVar String
   | TOther
+  | TAny
   | TVariant [Type]
-  deriving(Eq)
+
+instance Eq Type where
+  TAny == _                 = True
+  _ == TAny                 = True
+  TInt == TInt              = True
+  TFunc a b == TFunc a' b'  = (a == a') && (b == b')
+  TList a == TList a'       = a == a'
+  TTuple l == TTuple l'     = l == l'
+  TOther == TOther          = True
+  TVariant l == TVariant l' = l == l'
+  _ == _                    = False
+
+type_eq TAny _ = True
+type_eq _ TAny = True
+type_eq x y = x == y
+
+type_neq a b = not (type_eq a b)
 
 isFunctionType :: Type -> Bool
 isFunctionType (TFunc {}) = True
@@ -43,12 +60,14 @@ instance Show Type where
   show (TTuple [])      = "()"
   show (TTuple (t:ts))  = "(" ++ show t ++ (concat $ ((", " ++) . show) <$> ts)  ++ ")"
   show (TVariant (t:ts))  = "<" ++ show t ++ (concat $ ((", " ++) . show) <$> ts)  ++ ">"
-  show TOther           = "?"
+  show TOther           = "<OTHER>"
+  show TAny             = "?"
 
 data Expr =
     EConst Type Int
   | EVar Type String
   | ELet Type String Expr Expr
+  | ELetRec Type String Type Expr Expr
   | EType Type String Type Expr
   | EAdd Type Expr Expr
   | ESub Type Expr Expr
@@ -68,17 +87,20 @@ data Expr =
   | EListFold Type Expr Expr
   | EListCons Type Expr Expr
   | EListEmpty Type Type
+  | EListIsEmpty Type Expr
   | EListHead Type Expr
   | EListTail Type Expr
   | ENatFold Type Expr Expr
   | EVariantConstruct Type Type Int Expr
   | EVariantDestruct Type [Expr]
+  | ETrace Type Expr Expr
 
 instance Show Expr where
   show (EConst _ i)      = show i
   show (EVar _ s)        = s
   show (ELet _ n v e)    = "let " ++ n ++ " = " ++ show v ++ " in " ++ show e
-  show (EType _ n v e)   = "let " ++ n ++ " = " ++ show v ++ " in " ++ show e
+  show (ELetRec _ n t v e)    = "letrec " ++ n ++ " : " ++ show t ++ " = " ++ show v ++ " in " ++ show e
+  show (EType _ n v e)   = "type " ++ n ++ " = " ++ show v ++ " in " ++ show e
   show (EAdd _ e1 e2)    = "(" ++ show e1 ++ ")" ++ " + " ++ "(" ++ show e2 ++ ")"
   show (ESub _ e1 e2)    = "(" ++ show e1 ++ ")" ++ " - " ++ "(" ++ show e2 ++ ")"
   show (EMul _ e1 e2)    = "(" ++ show e1 ++ ")" ++ " * " ++ "(" ++ show e2 ++ ")"
@@ -98,16 +120,19 @@ instance Show Expr where
   show (EListFold _ f x) = "fold " ++ "(" ++ show f ++ ")" ++ " with " ++ "(" ++ show x ++ ")"
   show (EListCons _ x xs) = "cons " ++ "(" ++ show x ++ ")" ++ " with " ++ "(" ++ show xs ++ ")"
   show (EListEmpty _ t) = "empty " ++ "(" ++ show t ++ ")"
+  show (EListIsEmpty _ e) = "isempty " ++ "(" ++ show e ++ ")"
   show (EListHead _ t) = "head " ++ "(" ++ show t ++ ")"
   show (EListTail _ t) = "tail " ++ "(" ++ show t ++ ")"
   show (ENatFold _ f x) = "natfold " ++ "(" ++ show f ++ ")" ++ " with " ++ "(" ++ show x ++ ")"
   show (EVariantConstruct _ t i e) = "make " ++ "(" ++ show t ++ ")" ++ " " ++ show i ++ " " ++ "(" ++ show e ++ ")"
   show (EVariantDestruct _ (f:fs)) = "destruct " ++ "(" ++ show f ++ (concat $ ((", " ++) . show) <$> fs)  ++ ")"
+  show (ETrace _ a b) = "trace " ++ "(" ++ show a ++ ")" ++ " in " ++ "(" ++ show b ++ ")"
 
 exprType :: Expr -> Type
 exprType (EConst ty i)      = ty
 exprType (EVar ty s)        = ty
 exprType (ELet ty n v e)    = ty
+exprType (ELetRec ty n t v e)    = ty
 exprType (EType ty n v e)   = ty
 exprType (EAdd ty e1 e2)    = ty
 exprType (ESub ty e1 e2)    = ty
@@ -128,16 +153,19 @@ exprType (ETuple ty (e:es)) = ty
 exprType (EListFold ty _ _) = ty
 exprType (EListCons ty _ _) = ty
 exprType (EListEmpty ty _) = ty
+exprType (EListIsEmpty ty _) = ty
 exprType (EListHead ty _) = ty
 exprType (EListTail ty _) = ty
 exprType (ENatFold ty _ _) = ty
 exprType (EVariantConstruct ty _ _ _) = ty
 exprType (EVariantDestruct ty _) = ty
+exprType (ETrace ty _ _) = ty
 
 withType :: (Type -> Type) -> Expr -> Expr
 withType fty (EConst ty i)      = EConst (fty ty) i
 withType fty (EVar ty s)        = EVar (fty ty) s
 withType fty (ELet ty n v e)    = ELet (fty ty) n v e
+withType fty (ELetRec ty n t v e)    = ELetRec (fty ty) n t v e
 withType fty (EType ty n v e)   = EType (fty ty) n v e
 withType fty (EAdd ty e1 e2)    = EAdd (fty ty) e1 e2
 withType fty (ESub ty e1 e2)    = ESub (fty ty) e1 e2
@@ -158,11 +186,13 @@ withType fty (ETuple ty (e:es)) = ETuple (fty ty) (e:es)
 withType fty (EListFold ty f x) = EListFold (fty ty) f x
 withType fty (EListCons ty x xs) = EListCons (fty ty) x xs
 withType fty (EListEmpty ty t) = EListEmpty (fty ty) t
+withType fty (EListIsEmpty ty t) = EListIsEmpty (fty ty) t
 withType fty (EListHead ty l) = EListHead (fty ty) l
 withType fty (EListTail ty l) = EListTail (fty ty) l
 withType fty (ENatFold ty f x) = ENatFold (fty ty) f x
 withType fty (EVariantConstruct ty a b c) = EVariantConstruct (fty ty) a b c
 withType fty (EVariantDestruct ty l) = EVariantDestruct (fty ty) l
+withType fty (ETrace ty a b) = ETrace (fty ty) a b
 
 data Error =
     DuplicateVariable Expr String
@@ -177,6 +207,7 @@ data Error =
   | ExceptedList Expr
   | ExceptedVariant Expr
   | BadVariantType Expr
+  | BadLetRecType Expr
   | UnknownTypeVariable Expr String
   | UnknownTypeVariableSubst String
   deriving(Show)
@@ -197,6 +228,7 @@ substituteType mp (TTuple ts) =
       t' <- substituteType mp t
       return $ t':ts'
     ) [] ts
+substituteType mp TAny = return TAny
 substituteType mp (TVariant ts) =
   TVariant <$> foldrM (\t ts' -> do
       t' <- substituteType mp t
@@ -221,6 +253,17 @@ typecheck (me, mt) e = do
           v' <- typecheck (me, mt) v
           e' <- typecheck (Map.insert n (exprType v') me, mt) e
           return $ ELet (exprType e') n v' e'
+    typecheck' (me, mt) expr@(ELetRec _ n t v e)   = do
+      t' <- substituteType mt t
+      case Map.lookup n me of
+        Just _ -> throwError $ DuplicateVariable expr n
+        Nothing -> do
+          v' <- typecheck (Map.insert n t' me, mt) v
+          if exprType v' `type_eq` t
+            then do
+              e' <- typecheck (Map.insert n t' me, mt) e
+              return $ ELetRec (exprType e') n t' v' e'
+            else throwError $ BadLetRecType expr
     typecheck' (me, mt) expr@(EType _ n v e)   = do
       v' <- substituteType mt v
       case Map.lookup n mt of
@@ -231,70 +274,70 @@ typecheck (me, mt) e = do
     typecheck' (me, mt) expr@(EAdd _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ EAdd TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(ESub _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ ESub TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(EMul _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ EMul TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(EDiv _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ EDiv TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(EEq _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ EEq TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(ENEq _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ ENEq TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(EGT _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ EGT TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(EGTE _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ EGTE TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(ELTE _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ ELTE TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(ELT _ e1 e2)   = do
       e1' <- typecheck (me, mt) e1
       e2' <- typecheck (me, mt) e2
-      if exprType e1' == TInt && exprType e2' == TInt
+      if exprType e1' `type_eq` TInt && exprType e2' `type_eq` TInt
         then return $ ELT TInt e1' e2'
         else throwError $ ArithNotInt expr
     typecheck' (me, mt) expr@(EIf _ c b1 b2) = do
       c' <- typecheck (me, mt) c
       b1' <- typecheck (me, mt) b1
       b2' <- typecheck (me, mt) b2
-      if exprType c' /= TInt
+      if exprType c' `type_neq` TInt
         then throwError $ ConditionalNotInt expr
-      else if exprType b1' /= exprType b2'
+      else if exprType b1' `type_neq` exprType b2'
         then throwError $ IfBranchNotSameType expr
         else return $ EIf (exprType b1') c' b1' b2'
     typecheck' (me, mt) expr@(ELambda _ n t e) = do
@@ -309,7 +352,7 @@ typecheck (me, mt) e = do
       t' <- typecheck (me, mt) t
       case exprType f' of
         TFunc tau sigma ->
-          if tau /= exprType t'
+          if tau `type_neq` exprType t'
             then throwError $ FunctionTypeMismatch expr
             else return $ EApp sigma f' t'
         _ -> throwError $ NonFunctionApplication expr
@@ -329,18 +372,23 @@ typecheck (me, mt) e = do
       x' <- typecheck (me, mt) x
       case exprType f' of
         TFunc a (TFunc sigma sigma') -> 
-          if sigma == sigma' && sigma == exprType x'
+          if sigma `type_eq` sigma' && sigma `type_eq` exprType x'
             then return $ EListFold (TFunc (TList a) sigma) f' x'
             else throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
     typecheck' (me, mt) expr@(EListCons _ x xs) = do
       x' <- typecheck (me, mt) x
       xs' <- typecheck (me, mt) xs
-      if exprType xs' == TList (exprType x')
+      if exprType xs' `type_eq` TList (exprType x')
         then return $ EListCons (TList (exprType x')) x' xs'
         else throwError $ FunctionTypeMismatch expr
     typecheck' (me, mt) expr@(EListEmpty _ t) = do
       return $ EListEmpty (TList t) t
+    typecheck' (me, mt) expr@(EListIsEmpty _ e) = do
+      e' <- typecheck (me, mt) e
+      case exprType e' of
+        TList a -> return $ EListIsEmpty TInt e'
+        _ -> throwError $ ExceptedList expr
     typecheck' (me, mt) expr@(EListHead _ l) = do
       l' <- typecheck (me, mt) l
       case exprType l' of
@@ -356,7 +404,7 @@ typecheck (me, mt) e = do
       x' <- typecheck (me, mt) x
       case exprType f' of
         TFunc TInt (TFunc sigma sigma') -> 
-          if sigma == sigma' && sigma == exprType x'
+          if sigma `type_eq` sigma' && sigma `type_eq` exprType x'
             then return $ ENatFold (TFunc TInt sigma) f' x'
             else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
@@ -367,9 +415,9 @@ typecheck (me, mt) e = do
           if 0 <= i && i < length ts
             then do
               e' <- typecheck (me, mt) e
-              if exprType e' == ts !! i
+              if exprType e' `type_eq` (ts !! i)
                 then return $ EVariantConstruct ty' ty' i e'
-                else throwError $ BadVariantType expr
+                else traceShow (exprType e', ts !! i) $ throwError $ BadVariantType expr
             else throwError $ BadVariantType expr
         _ -> throwError $ ExceptedVariant expr
     typecheck' (me, mt) expr@(EVariantDestruct _ fs) = do
@@ -380,9 +428,13 @@ typecheck (me, mt) e = do
           _ -> throwError $ NonFunctionApplication expr
       let ts = fst <$> l 
       let ss = snd <$> l 
-      if all (== (ss !! 0)) ss
+      if all (type_eq (ss !! 0)) ss
         then return $ EVariantDestruct (TFunc (TVariant ts) (ss !! 0)) fs'
         else throwError $ NonFunctionApplication expr
+    typecheck' (me, mt) expr@(ETrace _ a b) = do
+      a' <- typecheck (me, mt) a
+      b' <- typecheck (me, mt) b
+      return $ ETrace (exprType b') a' b'
 
 
 typecheck0 = typecheck (Map.empty, Map.empty)
@@ -434,7 +486,7 @@ runHL :: CMonad () -> [Instruction]
 runHL m = execWriter $ runStateT (runReaderT m $ CompilationState "." Map.empty) 0
 
 compile :: Expr -> CMonad ()
-compile e | exprType e == TOther = traceShow e $ error "error"
+compile e | exprType e == TOther = trace ("ERROR : " ++ show e) $ compile $ withType (\_ -> TAny) e
 compile (EConst _ i)          = tell [LDC $ VInt i]
 compile (EVar _ s)            = do
   state <- ask
@@ -444,6 +496,63 @@ compile (EVar _ s)            = do
     Just (VLConstant i)      -> tell [LDC (VInt i)]
     Nothing -> error $ "UnknownVariable " ++ s
 compile (ELet _ n v e)        = compile (EApp (exprType e) (ELambda (TFunc (exprType v) (exprType e)) n (exprType v) e) v)
+compile (ELetRec _ n t v e)   = do
+  id <- get
+  increaseState
+  let blockName = "letrec." ++ show id
+  bbegin <- blockBegin blockName
+  bend <- blockEnd blockName
+  
+  id <- get
+  increaseState
+  let lambdaBlock = "lambda." ++ show id
+  lambdaBegin <- blockBegin lambdaBlock
+  lambdaEnd <- blockEnd lambdaBlock
+
+  id <- get
+  increaseState
+  let lambda2Block = "lambda2." ++ show id
+  lambda2Begin <- blockBegin lambda2Block
+  lambda2End <- blockEnd lambda2Block
+
+  tell [LDC (VInt 0), TSEL (VLabel lambda2End) (VLabel lambda2End)]
+  block blockName $ bindVariable "?" $ bindVariable n $ bindVariable "?" $ do
+    tell [LD (VInt 0) (VInt 0)]
+    compile v
+    tell [AP (VInt 1), RTN]
+  block lambdaBlock $ do
+    tell
+      [ LD (VInt 1) (VInt 0)
+      , LD (VInt 0) (VInt 0)
+      , AP (VInt 1)
+      , RTN
+      ]
+  block lambda2Block $ do
+    tell
+      [ DUM (VInt 1)
+      , LDF (VLabel bbegin)
+      , LDF (VLabel lambdaBegin)
+      , RAP (VInt 1)
+      , RTN
+      ]
+  tell [LDF (VLabel lambda2Begin)]
+  compile $ ELambda (TFunc (exprType v) (exprType e)) n (exprType v) e
+  tell [AP $ VInt 1]
+  --tell
+  --  [ LABEL "3"
+  --  , DUM (VInt 1)
+  --  , LDF (VLabel "1")
+  --  , LDF (VLabel "2")
+  --  , RAP (VInt 1)
+  --  , RTN
+  --  , LABEL "1"
+  --  , LD (VInt 1) (VInt 0)
+  --  , RTN
+  --  , LABEL "2"
+  --  , LD (VInt 0) (VInt 0)
+  --  , AP (VInt 0)
+  --  , RTN
+  --  ]
 compile (EType _ n v e)       = compile e
 compile (EAdd _ e1 e2)        = do
   compile e1
@@ -601,6 +710,9 @@ compile (EListCons _ x xs)         = do
   compile xs
   tell [CONS]
 compile (EListEmpty _ _)           = tell [LDC (VInt 0)]
+compile (EListIsEmpty _ e)           = do
+  compile e
+  tell [ATOM]
 compile (EListHead _ l)           = do
   compile l
   tell [CAR]
@@ -708,9 +820,10 @@ compile (EVariantDestruct _ fs) = do
               block thenbegin $ compileVariantDestruct (k+1) j
               block elsebegin $ compileVariantDestruct i k
             tell [LD (VInt 0) (VInt 0), CAR, LDC (VInt k), CGT, SEL (VLabel thenbegin) (VLabel elsebegin)]
-
-
-
+compile (ETrace _ a b) = do
+  compile a
+  tell [DBUG]
+  compile b
 
 
 fullCompile :: Expr -> CMonad ()
