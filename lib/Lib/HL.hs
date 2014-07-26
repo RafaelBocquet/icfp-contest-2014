@@ -389,6 +389,7 @@ compile (EVar _ s)            = do
     Just (VLEnvironment n i) -> tell [LD (VInt n) (VInt i)]
     Just (VLGlobal lbl)      -> tell [LDC (VLabel lbl)]
     Just (VLConstant i)      -> tell [LDC (VInt i)]
+    Nothing -> error $ "UnknownVariable " ++ s
 compile (ELet _ n v e)        = compile (EApp (exprType e) (ELambda (TFunc (exprType v) (exprType e)) n (exprType v) e) v)
 compile (EType _ n v e)       = compile e
 compile (EAdd _ e1 e2)        = do
@@ -488,9 +489,15 @@ compile (EListFold _ f x)         = do
   let lambdaBlock = "lambda." ++ show id'
   lambdaBegin <- blockBegin lambdaBlock
   lambdaEnd <- blockEnd lambdaBlock
+  
+  id' <- get
+  increaseState
+  let lambda2Block = "lambda2." ++ show id'
+  lambda2Begin <- blockBegin lambda2Block
+  lambda2End <- blockEnd lambda2Block
 
-  tell [LDC $ VInt 0, TSEL (VLabel lambdaEnd) (VLabel lambdaEnd)]
-  block blockName $ bindVariable "?" $ do
+  tell [LDC $ VInt 0, TSEL (VLabel lambda2End) (VLabel lambda2End)]
+  block blockName $ bindVariable "?" $ bindVariable "?" $ bindVariable "?" $ do
     thenbegin <- blockBegin "then"
     elsebegin <- blockBegin "else"
     tell [LD (VInt 0) (VInt 0), CDR, ATOM, TSEL (VLabel thenbegin) (VLabel elsebegin)]
@@ -515,19 +522,27 @@ compile (EListFold _ f x)         = do
         , CDR
         , CDR
         , CONS
-        , LDF (VLabel bbegin)
+        , LD (VInt 1) (VInt 0)
         , TAP (VInt 1)
         ]
-  block lambdaBlock $ bindVariable "?" $ do
+  block lambdaBlock $ bindVariable "?" $ bindVariable "?" $ do
     compile x
     tell
-      [ LD (VInt 0) (VInt 0)
+      [ LD (VInt 1) (VInt 0)
       , CONS
-      , LDF (VLabel bbegin)
-      , TAP (VInt 1)
+      , LD (VInt 0) (VInt 0)
+      , AP (VInt 1)
       , RTN
-      ]   
-  tell [LDF (VLabel lambdaBegin)]
+      ]
+  block lambda2Block $ bindVariable "?" $ do
+    tell
+      [ DUM (VInt 1)
+      , LDF (VLabel bbegin)
+      , LDF (VLabel lambdaBegin)
+      , RAP (VInt 1)
+      , RTN
+      ]
+  tell [LDF (VLabel lambda2Begin)]
 compile (EListCons _ x xs)         = do
   compile x
   compile xs

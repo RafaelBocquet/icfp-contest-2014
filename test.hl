@@ -117,7 +117,7 @@ let distance = \a:(I, I). \b:(I, I). (abs (a[0]-b[0])) + (abs (a[1]-b[1])) in
 let distanceNearestGhost =
   \world:worldState.
   \p:(I, I). (
-    fold (\g:ghostStatus. \d:I. min d 511) with 512 //min d (distance g[1] p)
+    fold (\g:ghostStatus. \d:I. min d (distance g[1] p)) with 512
   ) world[2] in
 let distanceNearestPill  =
   \world:worldState.
@@ -140,9 +140,9 @@ let scoreMove = \world:worldState. \ws:(I, I). \d:direction.
   let next = applyDir d (world[1][1]) in
   if isCorrectMove world ws d
     then
-//      let dPill = distanceNearestPill world next in
+     let dPill = distanceNearestPill world next in
      let dGhost = distanceNearestGhost world next in
-      5*dGhost
+     3*dGhost - 5 * dPill
     else 0-10000000
 in
 

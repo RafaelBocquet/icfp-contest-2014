@@ -8,6 +8,7 @@ cp -r lib _solution/code
 cp -r src _solution/code
 cp  ICFP.cabal _solution/code
 cp  README _solution/code
+cp  test.hl _solution/code
 tar -czf ICFP.tar.gz _solution
 sha1sum ICFP.tar.gz > ICFP.tar.gz.sha1sum
 rm -r _solution
