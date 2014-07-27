@@ -1,0 +1,1934 @@
+
+lib/Lib/HLParser.hs:86:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Type
+      Actual type: ParsecT String () Identity Type
+    In the expression:
+      lexParser
+      $ do { reParser (pack "I");
+             return TInt }
+    In the first argument of `choice', namely
+      `[lexParser
+        $ do { reParser (pack "I");
+               return TInt },
+        lexParser
+        $ do { reOpParser "?";
+               return TAny },
+        TVar <$> lexParser idParser,
+        lexParser
+        $ parParser
+          $ do { ts <- commaParser parseType;
+                 return
+                 $ case ts of {
+                     [] -> ...
+                     t : [] -> ...
+                     ts -> ... } },
+        ....]'
+    In a stmt of a 'do' block:
+      leftType <- choice
+                    [lexParser
+                     $ do { reParser (pack "I");
+                            return TInt },
+                     lexParser
+                     $ do { reOpParser "?";
+                            return TAny },
+                     TVar <$> lexParser idParser,
+                     lexParser
+                     $ parParser
+                       $ do { ts <- commaParser parseType;
+                              return
+                              $ case ts of {
+                                  [] -> ...
+                                  t : [] -> ...
+                                  ts -> ... } },
+                     ....]
+
+lib/Lib/HLParser.hs:87:19:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: String
+      Actual type: ByteString
+    In the return type of a call of `pack'
+    In the first argument of `reParser', namely `(pack "I")'
+    In a stmt of a 'do' block: reParser (pack "I")
+
+lib/Lib/HLParser.hs:89:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Type
+      Actual type: ParsecT String () Identity Type
+    In the expression:
+      lexParser
+      $ do { reOpParser "?";
+             return TAny }
+    In the first argument of `choice', namely
+      `[lexParser
+        $ do { reParser (pack "I");
+               return TInt },
+        lexParser
+        $ do { reOpParser "?";
+               return TAny },
+        TVar <$> lexParser idParser,
+        lexParser
+        $ parParser
+          $ do { ts <- commaParser parseType;
+                 return
+                 $ case ts of {
+                     [] -> ...
+                     t : [] -> ...
+                     ts -> ... } },
+        ....]'
+    In a stmt of a 'do' block:
+      leftType <- choice
+                    [lexParser
+                     $ do { reParser (pack "I");
+                            return TInt },
+                     lexParser
+                     $ do { reOpParser "?";
+                            return TAny },
+                     TVar <$> lexParser idParser,
+                     lexParser
+                     $ parParser
+                       $ do { ts <- commaParser parseType;
+                              return
+                              $ case ts of {
+                                  [] -> ...
+                                  t : [] -> ...
+                                  ts -> ... } },
+                     ....]
+
+lib/Lib/HLParser.hs:92:16:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity String
+      Actual type: ParsecT String () Identity String
+    In the return type of a call of `lexParser'
+    In the second argument of `(<$>)', namely `lexParser idParser'
+    In the expression: TVar <$> lexParser idParser
+
+lib/Lib/HLParser.hs:93:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Type
+      Actual type: ParsecT String () Identity Type
+    In the expression:
+      lexParser
+      $ parParser
+        $ do { ts <- commaParser parseType;
+               return
+               $ case ts of {
+                   [] -> TOther
+                   t : [] -> t
+                   ts -> TTuple ts } }
+    In the first argument of `choice', namely
+      `[lexParser
+        $ do { reParser (pack "I");
+               return TInt },
+        lexParser
+        $ do { reOpParser "?";
+               return TAny },
+        TVar <$> lexParser idParser,
+        lexParser
+        $ parParser
+          $ do { ts <- commaParser parseType;
+                 return
+                 $ case ts of {
+                     [] -> ...
+                     t : [] -> ...
+                     ts -> ... } },
+        ....]'
+    In a stmt of a 'do' block:
+      leftType <- choice
+                    [lexParser
+                     $ do { reParser (pack "I");
+                            return TInt },
+                     lexParser
+                     $ do { reOpParser "?";
+                            return TAny },
+                     TVar <$> lexParser idParser,
+                     lexParser
+                     $ parParser
+                       $ do { ts <- commaParser parseType;
+                              return
+                              $ case ts of {
+                                  [] -> ...
+                                  t : [] -> ...
+                                  ts -> ... } },
+                     ....]
+
+lib/Lib/HLParser.hs:94:27:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Type
+      Actual type: Parser Type
+    In the first argument of `commaParser', namely `parseType'
+    In a stmt of a 'do' block: ts <- commaParser parseType
+    In the second argument of `($)', namely
+      `do { ts <- commaParser parseType;
+            return
+            $ case ts of {
+                [] -> TOther
+                t : [] -> t
+                ts -> TTuple ts } }'
+
+lib/Lib/HLParser.hs:99:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Type
+      Actual type: ParsecT String () Identity Type
+    In the expression:
+      lexParser
+      $ angParser
+        $ do { ts <- commaParser parseType;
+               return
+               $ case ts of {
+                   [] -> TOther
+                   t : [] -> t
+                   ts -> TVariant ts } }
+    In the first argument of `choice', namely
+      `[lexParser
+        $ do { reParser (pack "I");
+               return TInt },
+        lexParser
+        $ do { reOpParser "?";
+               return TAny },
+        TVar <$> lexParser idParser,
+        lexParser
+        $ parParser
+          $ do { ts <- commaParser parseType;
+                 return
+                 $ case ts of {
+                     [] -> ...
+                     t : [] -> ...
+                     ts -> ... } },
+        ....]'
+    In a stmt of a 'do' block:
+      leftType <- choice
+                    [lexParser
+                     $ do { reParser (pack "I");
+                            return TInt },
+                     lexParser
+                     $ do { reOpParser "?";
+                            return TAny },
+                     TVar <$> lexParser idParser,
+                     lexParser
+                     $ parParser
+                       $ do { ts <- commaParser parseType;
+                              return
+                              $ case ts of {
+                                  [] -> ...
+                                  t : [] -> ...
+                                  ts -> ... } },
+                     ....]
+
+lib/Lib/HLParser.hs:100:27:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Type
+      Actual type: Parser Type
+    In the first argument of `commaParser', namely `parseType'
+    In a stmt of a 'do' block: ts <- commaParser parseType
+    In the second argument of `($)', namely
+      `do { ts <- commaParser parseType;
+            return
+            $ case ts of {
+                [] -> TOther
+                t : [] -> t
+                ts -> TVariant ts } }'
+
+lib/Lib/HLParser.hs:105:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Type
+      Actual type: ParsecT String () Identity Type
+    In the expression:
+      lexParser
+      $ braParser
+        $ do { ty <- parseType;
+               return $ TList ty }
+    In the first argument of `choice', namely
+      `[lexParser
+        $ do { reParser (pack "I");
+               return TInt },
+        lexParser
+        $ do { reOpParser "?";
+               return TAny },
+        TVar <$> lexParser idParser,
+        lexParser
+        $ parParser
+          $ do { ts <- commaParser parseType;
+                 return
+                 $ case ts of {
+                     [] -> ...
+                     t : [] -> ...
+                     ts -> ... } },
+        ....]'
+    In a stmt of a 'do' block:
+      leftType <- choice
+                    [lexParser
+                     $ do { reParser (pack "I");
+                            return TInt },
+                     lexParser
+                     $ do { reOpParser "?";
+                            return TAny },
+                     TVar <$> lexParser idParser,
+                     lexParser
+                     $ parParser
+                       $ do { ts <- commaParser parseType;
+                              return
+                              $ case ts of {
+                                  [] -> ...
+                                  t : [] -> ...
+                                  ts -> ... } },
+                     ....]
+
+lib/Lib/HLParser.hs:106:15:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Type
+      Actual type: Parser Type
+    In a stmt of a 'do' block: ty <- parseType
+    In the second argument of `($)', namely
+      `do { ty <- parseType;
+            return $ TList ty }'
+    In the second argument of `($)', namely
+      `braParser
+       $ do { ty <- parseType;
+              return $ TList ty }'
+
+lib/Lib/HLParser.hs:111:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: try $ lexParser $ reOpParser "->"
+    In the expression:
+      do { try $ lexParser $ reOpParser "->";
+           rightType <- parseType;
+           return $ TFunc leftType rightType }
+    In the first argument of `choice', namely
+      `[do { try $ lexParser $ reOpParser "->";
+             rightType <- parseType;
+             return $ TFunc leftType rightType },
+        return leftType]'
+
+lib/Lib/HLParser.hs:119:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ parParser
+        $ do { ts <- commaParser parseExpression;
+               return
+               $ case ts of {
+                   [] -> ETuple TOther []
+                   e : [] -> e
+                   es -> ETuple TOther es } }
+    In the first argument of `choice', namely
+      `[lexParser
+        $ parParser
+          $ do { ts <- commaParser parseExpression;
+                 return
+                 $ case ts of {
+                     [] -> ...
+                     e : [] -> ...
+                     es -> ... } },
+        EVar TOther <$> lexParser idParser,
+        EConst TOther . fromIntegral <$> lexParser intParser]'
+    In the expression:
+      choice
+        [lexParser
+         $ parParser
+           $ do { ts <- commaParser parseExpression;
+                  return
+                  $ case ts of {
+                      [] -> ...
+                      e : [] -> ...
+                      es -> ... } },
+         EVar TOther <$> lexParser idParser,
+         EConst TOther . fromIntegral <$> lexParser intParser]
+
+lib/Lib/HLParser.hs:120:25:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In the first argument of `commaParser', namely `parseExpression'
+    In a stmt of a 'do' block: ts <- commaParser parseExpression
+    In the second argument of `($)', namely
+      `do { ts <- commaParser parseExpression;
+            return
+            $ case ts of {
+                [] -> ETuple TOther []
+                e : [] -> e
+                es -> ETuple TOther es } }'
+
+lib/Lib/HLParser.hs:125:21:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity String
+      Actual type: ParsecT String () Identity String
+    In the return type of a call of `lexParser'
+    In the second argument of `(<$>)', namely `lexParser idParser'
+    In the expression: EVar TOther <$> lexParser idParser
+
+lib/Lib/HLParser.hs:126:38:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Integer
+      Actual type: ParsecT String () Identity Integer
+    In the return type of a call of `lexParser'
+    In the second argument of `(<$>)', namely `lexParser intParser'
+    In the expression:
+      EConst TOther . fromIntegral <$> lexParser intParser
+
+lib/Lib/HLParser.hs:135:12:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Integer
+      Actual type: ParsecT String () Identity Integer
+    In the return type of a call of `braParser'
+    In a stmt of a 'do' block: i <- braParser intParser
+    In the expression:
+      do { i <- braParser intParser;
+           parseApplications e1 $ ETupleGet TOther e2 (fromIntegral i) }
+
+lib/Lib/HLParser.hs:153:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "*"
+    In the expression:
+      do { lexParser $ reOpParser "*";
+           e2 <- parseExpression2;
+           return $ EMul TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "*";
+             e2 <- parseExpression2;
+             return $ EMul TOther e1 e2 },
+        do { lexParser $ reOpParser "/";
+             e2 <- parseExpression2;
+             return $ EDiv TOther e1 e2 },
+        return e1]'
+
+lib/Lib/HLParser.hs:157:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "/"
+    In the expression:
+      do { lexParser $ reOpParser "/";
+           e2 <- parseExpression2;
+           return $ EDiv TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "*";
+             e2 <- parseExpression2;
+             return $ EMul TOther e1 e2 },
+        do { lexParser $ reOpParser "/";
+             e2 <- parseExpression2;
+             return $ EDiv TOther e1 e2 },
+        return e1]'
+
+lib/Lib/HLParser.hs:168:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "+"
+    In the expression:
+      do { lexParser $ reOpParser "+";
+           e2 <- parseExpression1;
+           return $ EAdd TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "+";
+             e2 <- parseExpression1;
+             return $ EAdd TOther e1 e2 },
+        do { lexParser $ reOpParser "-";
+             e2 <- parseExpression1;
+             return $ ESub TOther e1 e2 },
+        return e1]'
+
+lib/Lib/HLParser.hs:172:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "-"
+    In the expression:
+      do { lexParser $ reOpParser "-";
+           e2 <- parseExpression1;
+           return $ ESub TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "+";
+             e2 <- parseExpression1;
+             return $ EAdd TOther e1 e2 },
+        do { lexParser $ reOpParser "-";
+             e2 <- parseExpression1;
+             return $ ESub TOther e1 e2 },
+        return e1]'
+
+lib/Lib/HLParser.hs:183:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "=="
+    In the expression:
+      do { lexParser $ reOpParser "==";
+           e2 <- parseExpression1;
+           return $ EEq TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "==";
+             e2 <- parseExpression1;
+             return $ EEq TOther e1 e2 },
+        do { lexParser $ reOpParser "/=";
+             e2 <- parseExpression1;
+             return $ ENEq TOther e1 e2 },
+        do { lexParser $ reOpParser "<=";
+             e2 <- parseExpression1;
+             return $ ELTE TOther e1 e2 },
+        do { lexParser $ reOpParser "<";
+             e2 <- parseExpression1;
+             return $ ELT TOther e1 e2 },
+        ....]'
+
+lib/Lib/HLParser.hs:187:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "/="
+    In the expression:
+      do { lexParser $ reOpParser "/=";
+           e2 <- parseExpression1;
+           return $ ENEq TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "==";
+             e2 <- parseExpression1;
+             return $ EEq TOther e1 e2 },
+        do { lexParser $ reOpParser "/=";
+             e2 <- parseExpression1;
+             return $ ENEq TOther e1 e2 },
+        do { lexParser $ reOpParser "<=";
+             e2 <- parseExpression1;
+             return $ ELTE TOther e1 e2 },
+        do { lexParser $ reOpParser "<";
+             e2 <- parseExpression1;
+             return $ ELT TOther e1 e2 },
+        ....]'
+
+lib/Lib/HLParser.hs:191:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "<="
+    In the expression:
+      do { lexParser $ reOpParser "<=";
+           e2 <- parseExpression1;
+           return $ ELTE TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "==";
+             e2 <- parseExpression1;
+             return $ EEq TOther e1 e2 },
+        do { lexParser $ reOpParser "/=";
+             e2 <- parseExpression1;
+             return $ ENEq TOther e1 e2 },
+        do { lexParser $ reOpParser "<=";
+             e2 <- parseExpression1;
+             return $ ELTE TOther e1 e2 },
+        do { lexParser $ reOpParser "<";
+             e2 <- parseExpression1;
+             return $ ELT TOther e1 e2 },
+        ....]'
+
+lib/Lib/HLParser.hs:195:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "<"
+    In the expression:
+      do { lexParser $ reOpParser "<";
+           e2 <- parseExpression1;
+           return $ ELT TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "==";
+             e2 <- parseExpression1;
+             return $ EEq TOther e1 e2 },
+        do { lexParser $ reOpParser "/=";
+             e2 <- parseExpression1;
+             return $ ENEq TOther e1 e2 },
+        do { lexParser $ reOpParser "<=";
+             e2 <- parseExpression1;
+             return $ ELTE TOther e1 e2 },
+        do { lexParser $ reOpParser "<";
+             e2 <- parseExpression1;
+             return $ ELT TOther e1 e2 },
+        ....]'
+
+lib/Lib/HLParser.hs:199:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser ">="
+    In the expression:
+      do { lexParser $ reOpParser ">=";
+           e2 <- parseExpression1;
+           return $ EGTE TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "==";
+             e2 <- parseExpression1;
+             return $ EEq TOther e1 e2 },
+        do { lexParser $ reOpParser "/=";
+             e2 <- parseExpression1;
+             return $ ENEq TOther e1 e2 },
+        do { lexParser $ reOpParser "<=";
+             e2 <- parseExpression1;
+             return $ ELTE TOther e1 e2 },
+        do { lexParser $ reOpParser "<";
+             e2 <- parseExpression1;
+             return $ ELT TOther e1 e2 },
+        ....]'
+
+lib/Lib/HLParser.hs:203:9:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser ">"
+    In the expression:
+      do { lexParser $ reOpParser ">";
+           e2 <- parseExpression1;
+           return $ EGT TOther e1 e2 }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reOpParser "==";
+             e2 <- parseExpression1;
+             return $ EEq TOther e1 e2 },
+        do { lexParser $ reOpParser "/=";
+             e2 <- parseExpression1;
+             return $ ENEq TOther e1 e2 },
+        do { lexParser $ reOpParser "<=";
+             e2 <- parseExpression1;
+             return $ ELTE TOther e1 e2 },
+        do { lexParser $ reOpParser "<";
+             e2 <- parseExpression1;
+             return $ ELT TOther e1 e2 },
+        ....]'
+
+lib/Lib/HLParser.hs:212:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "let"
+    In the expression:
+      do { lexParser $ reParser "let";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:213:12:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity String
+      Actual type: ParsecT String () Identity String
+    In a stmt of a 'do' block: x <- idParser
+    In the expression:
+      do { lexParser $ reParser "let";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:214:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "="
+    In the expression:
+      do { lexParser $ reParser "let";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:216:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "in"
+    In the expression:
+      do { lexParser $ reParser "let";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:220:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "letrec"
+    In the expression:
+      do { lexParser $ reParser "letrec";
+           x <- idParser;
+           lexParser $ reOpParser ":";
+           t <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:221:12:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity String
+      Actual type: ParsecT String () Identity String
+    In a stmt of a 'do' block: x <- idParser
+    In the expression:
+      do { lexParser $ reParser "letrec";
+           x <- idParser;
+           lexParser $ reOpParser ":";
+           t <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:222:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser ":"
+    In the expression:
+      do { lexParser $ reParser "letrec";
+           x <- idParser;
+           lexParser $ reOpParser ":";
+           t <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:224:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "="
+    In the expression:
+      do { lexParser $ reParser "letrec";
+           x <- idParser;
+           lexParser $ reOpParser ":";
+           t <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:226:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "in"
+    In the expression:
+      do { lexParser $ reParser "letrec";
+           x <- idParser;
+           lexParser $ reOpParser ":";
+           t <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:230:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "type"
+    In the expression:
+      do { lexParser $ reParser "type";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:231:12:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity String
+      Actual type: ParsecT String () Identity String
+    In a stmt of a 'do' block: x <- idParser
+    In the expression:
+      do { lexParser $ reParser "type";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:232:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "="
+    In the expression:
+      do { lexParser $ reParser "type";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:234:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "in"
+    In the expression:
+      do { lexParser $ reParser "type";
+           x <- idParser;
+           lexParser $ reOpParser "=";
+           v <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:238:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "if"
+    In the expression:
+      do { lexParser $ reParser "if";
+           e <- parseExpression;
+           lexParser $ reParser "then";
+           b1 <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:240:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "then"
+    In the expression:
+      do { lexParser $ reParser "if";
+           e <- parseExpression;
+           lexParser $ reParser "then";
+           b1 <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:242:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "else"
+    In the expression:
+      do { lexParser $ reParser "if";
+           e <- parseExpression;
+           lexParser $ reParser "then";
+           b1 <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:246:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "\\"
+    In the expression:
+      do { lexParser $ reOpParser "\\";
+           id <- idParser;
+           lexParser $ reOpParser ":";
+           ty <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:247:13:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity String
+      Actual type: ParsecT String () Identity String
+    In a stmt of a 'do' block: id <- idParser
+    In the expression:
+      do { lexParser $ reOpParser "\\";
+           id <- idParser;
+           lexParser $ reOpParser ":";
+           ty <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:248:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser ":"
+    In the expression:
+      do { lexParser $ reOpParser "\\";
+           id <- idParser;
+           lexParser $ reOpParser ":";
+           ty <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:250:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reOpParser "."
+    In the expression:
+      do { lexParser $ reOpParser "\\";
+           id <- idParser;
+           lexParser $ reOpParser ":";
+           ty <- parseType;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:253:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "fold";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:255:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: f <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "fold";
+            f <- parseExpression;
+            lexParser $ reParser "with";
+            x <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "fold";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:257:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: x <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "fold";
+            f <- parseExpression;
+            lexParser $ reParser "with";
+            x <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "fold";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:259:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "natfold";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:261:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: f <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "natfold";
+            f <- parseExpression;
+            lexParser $ reParser "with";
+            x <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "natfold";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:263:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: x <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "natfold";
+            f <- parseExpression;
+            lexParser $ reParser "with";
+            x <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "natfold";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:265:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "cons";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:267:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: f <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "cons";
+            f <- parseExpression;
+            lexParser $ reParser "with";
+            x <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "cons";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:269:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: x <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "cons";
+            f <- parseExpression;
+            lexParser $ reParser "with";
+            x <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "cons";
+             f <- parseExpression;
+             lexParser $ reParser "with";
+             x <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:271:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "empty";
+             t <- parseType;
+             return $ EListEmpty TOther t }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:273:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Type
+      Actual type: Parser Type
+    In a stmt of a 'do' block: t <- parseType
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "empty";
+            t <- parseType;
+            return $ EListEmpty TOther t }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "empty";
+             t <- parseType;
+             return $ EListEmpty TOther t }
+
+lib/Lib/HLParser.hs:275:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "isempty";
+             t <- parseExpression;
+             return $ EListIsEmpty TOther t }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:277:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: t <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "isempty";
+            t <- parseExpression;
+            return $ EListIsEmpty TOther t }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "isempty";
+             t <- parseExpression;
+             return $ EListIsEmpty TOther t }
+
+lib/Lib/HLParser.hs:279:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "head";
+             l <- parseExpression;
+             return $ EListHead TOther l }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:281:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: l <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "head";
+            l <- parseExpression;
+            return $ EListHead TOther l }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "head";
+             l <- parseExpression;
+             return $ EListHead TOther l }
+
+lib/Lib/HLParser.hs:283:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "tail";
+             l <- parseExpression;
+             return $ EListTail TOther l }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:285:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: l <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "tail";
+            l <- parseExpression;
+            return $ EListTail TOther l }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "tail";
+             l <- parseExpression;
+             return $ EListTail TOther l }
+
+lib/Lib/HLParser.hs:287:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "make";
+             vty <- parseType;
+             i <- intParser;
+             e <- parseExpression;
+             .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:289:14:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Type
+      Actual type: Parser Type
+    In a stmt of a 'do' block: vty <- parseType
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "make";
+            vty <- parseType;
+            i <- intParser;
+            e <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "make";
+             vty <- parseType;
+             i <- intParser;
+             e <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:291:12:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In a stmt of a 'do' block: e <- parseExpression
+    In the second argument of `($)', namely
+      `do { lexParser $ reParser "make";
+            vty <- parseType;
+            i <- intParser;
+            e <- parseExpression;
+            .... }'
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "make";
+             vty <- parseType;
+             i <- intParser;
+             e <- parseExpression;
+             .... }
+
+lib/Lib/HLParser.hs:294:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "trace"
+    In the expression:
+      do { lexParser $ reParser "trace";
+           a <- parseExpression;
+           lexParser $ reParser "in";
+           b <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:296:7:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: lexParser $ reParser "in"
+    In the expression:
+      do { lexParser $ reParser "trace";
+           a <- parseExpression;
+           lexParser $ reParser "in";
+           b <- parseExpression;
+           .... }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+
+lib/Lib/HLParser.hs:299:5:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity Expr
+      Actual type: ParsecT String () Identity Expr
+    In the expression:
+      lexParser
+      $ do { lexParser $ reParser "destruct";
+             lexParser
+             $ parParser
+               $ do { es <- commaParser parseExpression;
+                      return $ EVariantDestruct TOther es } }
+    In the first argument of `choice', namely
+      `[do { lexParser $ reParser "let";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "letrec";
+             x <- idParser;
+             lexParser $ reOpParser ":";
+             .... },
+        do { lexParser $ reParser "type";
+             x <- idParser;
+             lexParser $ reOpParser "=";
+             .... },
+        do { lexParser $ reParser "if";
+             e <- parseExpression;
+             lexParser $ reParser "then";
+             .... },
+        ....]'
+    In the expression:
+      choice
+        [do { lexParser $ reParser "let";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "letrec";
+              x <- idParser;
+              lexParser $ reOpParser ":";
+              .... },
+         do { lexParser $ reParser "type";
+              x <- idParser;
+              lexParser $ reOpParser "=";
+              .... },
+         do { lexParser $ reParser "if";
+              e <- parseExpression;
+              lexParser $ reParser "then";
+              .... },
+         ....]
+
+lib/Lib/HLParser.hs:302:27:
+    Couldn't match type `ByteString' with `[Char]'
+    Expected type: ParsecT String () Identity Expr
+      Actual type: Parser Expr
+    In the first argument of `commaParser', namely `parseExpression'
+    In a stmt of a 'do' block: es <- commaParser parseExpression
+    In the second argument of `($)', namely
+      `do { es <- commaParser parseExpression;
+            return $ EVariantDestruct TOther es }'
+
+lib/Lib/HLParser.hs:309:3:
+    Couldn't match type `[Char]' with `ByteString'
+    Expected type: ParsecT ByteString () Identity ()
+      Actual type: ParsecT String () Identity ()
+    In a stmt of a 'do' block: wsParser
+    In the expression:
+      do { wsParser;
+           parseExpression }
+    In an equation for `mainParser':
+        mainParser
+          = do { wsParser;
+                 parseExpression }
+
+lib/Lib/HLParser.hs:313:48:
+    Couldn't match type `GHC.Word.Word8' with `Char'
+    Expected type: String -> ByteString
+      Actual type: [GHC.Word.Word8] -> ByteString
+    In the second argument of `(.)', namely `pack'
+    In the second argument of `(.)', namely
+      `runPT mainParser () "" . pack'
+    In the expression: runIdentity . runPT mainParser () "" . pack

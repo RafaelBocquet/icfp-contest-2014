@@ -127,48 +127,67 @@ let worldSize = \world:worldState.
   (length_I (head world[0]), length_LI world[0]) in
 
 type node = (I, I) in
-type nodeId = I in
-type vertex = (nodeId, nodeId) in
-type vertexId = I in
-let normaliseVertex = \v:vertex. (min v[0] v[1], max v[0] v[1]) in
-type nodeOrVertex = <I, nodeId, vertexId> in
+let node_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let node_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+type nodeSet = btree_set_II in
+type vertex = (node, node) in
+type vertexSet = btree_set_V in
+// let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then  in
+type nodeOrVertex = <I, node, vertex> in
 let nodeOrVertexWall = 0 in
 let nodeOrVertexNode = 1 in
 let nodeOrVertexVertex = 2 in
-type graph = ([node], [vertex], [[nodeOrVertex]]) in
-type userState = ((I,I),qt256,graph,lambdaManStatus,[ghostStatus],fruitStatus) in
+type graph = (nodeSet, vertexSet, qt32_NOV) in
 
-let isPassageQt = \q:qt256. \p:(I, I).
-  let slot = qt256_at q p[0] p[1] in
-  slot /= mapWall
+let gNodeSet       = \g:graph. g[0] in
+let gVertexSet     = \g:graph. g[1] in
+let gNOV           = \g:graph. g[2] in
+
+type userState = ((I,I),qt32_I,graph,lambdaManStatus,[ghostStatus],fruitStatus,I,btree_set_II,btree_set_II,(I,I)) in
+
+let uWorldSize     = \u:userState. u[0] in
+let uWorldMap      = \u:userState. u[1] in
+let uGraph         = \u:userState. u[2] in
+let uLambdaStatus  = \u:userState. u[3] in
+let uGhostStatus   = \u:userState. u[4] in
+let uFruitStatus   = \u:userState. u[5] in
+let uUTC           = \u:userState. u[6] in
+let uPillSet       = \u:userState. u[7] in
+let uPowerPillSet  = \u:userState. u[8] in
+let uFruitPosition = \u:userState. u[9] in
+
+let isPassageQt = \ws:(I,I). \q:qt32_I. \p:(I, I).
+  if inBounds ws p
+    then
+      let slot = qt32_I_at q p[0] p[1] in
+      slot /= mapWall
+  else 0
   in
 
 let isPassage = \u:userState. \p:(I, I).
-  if inBounds u[0] p
+  if inBounds (uWorldSize u) p
     then
-      let slot = qt256_at u[1] p[0] p[1] in
+      let slot = qt32_I_at (uWorldMap u) p[0] p[1] in
       slot /= mapWall
     else 0
   in
 
 let isCorrectMove = \u:userState. \d:direction.
-  isPassage u (applyDir d u[3][1])
+  isPassage u (applyDir d (uLambdaStatus u)[1])
   in
-
-let findGhost = \world:worldState. \p:(I, I). 0 in
 
 let distanceNearestGhost =
   \u:userState.
   \p:(I, I). (
     fold (\g:ghostStatus. \d:I. min d (distance g[1] p)) with 512
-  ) u[4] in
+  ) (uGhostStatus u) in
 let distanceNearestPill =
   \u:userState.
   \p:(I, I). 0
   in
 
 let scoreMove = \u:userState. \d:direction.
-  let next = applyDir d u[3][1] in
+  let next = applyDir d (uLambdaStatus u)[1] in
   if isCorrectMove u d
     then
      let dPill = distanceNearestPill u next in
@@ -210,25 +229,98 @@ let pickMove = \u:userState.
 let qtFromWorld = \w:[[I]].(
   ( fold (
       \l:[I].
-      \acc1:(I, qt256).
+      \acc1:(I, qt32_I).
       let x = (
           fold (
             \s:I.
-            \acc2:(I, qt256).
+            \acc2:(I, qt32_I).
             ( acc2[0]+1
-            , qt256_insert acc2[1] acc2[0] acc1[0] s
+            , qt32_I_insert acc2[1] acc2[0] acc1[0] s
             )
           ) with (0, acc1[1])
         ) l
       in (acc1[0]+1, x[1])
-    ) with (0, qt256_empty)
+    ) with (0, qt32_I_empty)
   ) w)[1]
   in
 
-let simplePillSet = \wSize:(I,I). \world:qt256.
+let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
+  let pillList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if qt32_I_at world x y == mapPill
+              then cons (x, y) with acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  btree_set_II_from_list pillList
+in
+
+let makePowerPillSet = \wSize:(I,I). \world:qt32_I.
+  let pillList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if qt32_I_at world x y == mapPowerPill
+              then cons (x, y) with acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  btree_set_II_from_list pillList
+in
+
+let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
+  let fruitList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if qt32_I_at world x y == mapFruit
+              then cons (x, y) with acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  head fruitList
+in
+
+letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
+  let dp = applyDir d p in
+  if isPassageQt wSize world dp
+    then getWay d wSize world dp
+    else p
   in
 
-let graphFromWorld = \wSize:(I,I). \world:qt256.
+let graphFromWorld = \wSize:(I,I). \world:qt32_I.
   let nodeList =
     ( natfold
       ( \x_:I.
@@ -238,11 +330,11 @@ let graphFromWorld = \wSize:(I,I). \world:qt256.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if not (isPassageQt world (x, y))
+            if not (isPassageQt wSize world (x, y))
               then acc
-            else if and (and (isPassageQt world (x+1, y)) (isPassageQt world (x-1, y))) (and (not (isPassageQt world (x, y+1))) (not (isPassageQt world (x, y-1))))
+            else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
               then acc
-            else if and (and (isPassageQt world (x, y+1)) (isPassageQt world (x, y-1))) (and (not (isPassageQt world (x+1, y))) (not (isPassageQt world (x-1, y))))
+            else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
               then acc
             else cons (x, y) with acc
           )
@@ -253,7 +345,18 @@ let graphFromWorld = \wSize:(I,I). \world:qt256.
     ) wSize[0]
     in
   let nodeSet = btree_set_II_from_list nodeList in
-  trace nodeSet in (nodeList, empty I, empty [I])
+  let vertexList =
+    ( fold (\p:node. \acc:[vertex].
+        let upp = getWay dirUp wSize world p in
+        let leftp = getWay dirLeft wSize world p in
+        let acc_ = if node_eq upp p then acc else cons (upp, p) with acc in
+        let acc__ = if node_eq leftp p then acc else cons (leftp, p) with acc_ in
+        acc__
+      ) with (empty vertex)
+    ) nodeList
+    in
+  let vertexSet = btree_set_V_from_list vertexList in
+  (nodeSet, vertexSet, qt32_NOV_empty)
   in
 
 
@@ -263,7 +366,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt256.
 let makeUserState = \world:worldState.
   let ws = worldSize world       in
   let qt = qtFromWorld world[0] in
-  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3])
+  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3], 1, makeNormalPillSet ws qt, makePowerPillSet ws qt, makeFruitPosition ws qt)
   in
 
 type stepType = userState -> worldState -> (userState, direction) in
@@ -273,7 +376,7 @@ type mainType = worldState -> ? -> (userState, stepType) in
 let step =
     \u     : userState.
     \world : worldState.
-    let newU = (u[0], u[1], u[2], world[1], world[2], world[3]) in
+    let newU = (uWorldSize u, uWorldMap u, uGraph u, world[1], world[2], world[3], uUTC u, uPillSet u, uPowerPillSet u, uFruitPosition u) in
     (newU, pickMove newU)
   in
 

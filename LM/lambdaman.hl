@@ -1,475 +1,598 @@
 let not = \ b:I.if b then 0 else 1 in 
 
-type qt1 = I in
-let qt1_at_ = \q:qt1. \x_:I. \y_:I. \x:I. \y:I. q in
-let qt1_insert_ = \q:qt1. \x_:I. \y_:I. \x:I. \y:I. \v:I. v in
-let qt1_empty = 0 in
+  type qt1_I = I in
+  let qt1_I_at_ = \q:qt1_I. \x_:I. \y_:I. \x:I. \y:I. q in
+  let qt1_I_insert_ = \q:qt1_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I. v in
+  let qt1_I_empty = 0 in
+  
 
+  type qt2_I = ((qt1_I, qt1_I), (qt1_I, qt1_I)) in
 
-type qt2 = ((qt1, qt1), (qt1, qt1)) in
+  let qt2_I_at_ = \q:qt2_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 1
+      then
+        if y >= y_ + 1
+          then qt1_I_at_ q[1][1] (x_ + 1) (y_ + 1) x y
+          else qt1_I_at_ q[1][0] (x_ + 1) (y_)       x y
+      else
+        if y >= y_ + 1
+          then qt1_I_at_ q[0][1] (x_)       (y_ + 1) x y
+          else qt1_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt2_I_at = \q:qt2_I. qt2_I_at_ q 0 0 in
 
-let qt2_at_ = \q:qt2. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 1
-    then
-      if y >= y_ + 1
-        then qt1_at_ q[1][1] (x_ + 1) (y_ + 1) x y
-        else qt1_at_ q[1][0] (x_ + 1) (y_)       x y
-    else
-      if y >= y_ + 1
-        then qt1_at_ q[0][1] (x_)       (y_ + 1) x y
-        else qt1_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt2_at = \q:qt2. qt2_at_ q 0 0 in
+  let qt2_I_insert_ = \q:qt2_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 1
+      then
+        if y >= y_ + 1
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt1_I_insert_ q[1][1] (x_ + 1) (y_ + 1) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt1_I_insert_ q[1][0] (x_ + 1) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 1
+          then
+          ( ( q[0][0]                                          
+            , qt1_I_insert_ q[0][1] x_ (y_ + 1) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt1_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt2_I_insert = \q:qt2_I. qt2_I_insert_ q 0 0 in
+  let qt2_I_empty = ((qt1_I_empty, qt1_I_empty), (qt1_I_empty, qt1_I_empty)) in
+  
 
-let qt2_insert_ = \q:qt2. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 1
-    then
-      if y >= y_ + 1
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , qt1_insert_ q[1][1] (x_ + 1) (y_ + 1) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        , ( qt1_insert_ q[1][0] (x_ + 1) y_ x y v
-          , q[1][1]
-          )
-        )
-    else
-      if y >= y_ + 1
-        then
-        ( ( q[0][0]                                          
-          , qt1_insert_ q[0][1] x_ (y_ + 1) x y v
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt1_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt2_insert = \q:qt2. qt2_insert_ q 0 0 in
-let qt2_empty = ((qt1_empty, qt1_empty), (qt1_empty, qt1_empty)) in
+  type qt4_I = ((qt2_I, qt2_I), (qt2_I, qt2_I)) in
 
+  let qt4_I_at_ = \q:qt4_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 2
+      then
+        if y >= y_ + 2
+          then qt2_I_at_ q[1][1] (x_ + 2) (y_ + 2) x y
+          else qt2_I_at_ q[1][0] (x_ + 2) (y_)       x y
+      else
+        if y >= y_ + 2
+          then qt2_I_at_ q[0][1] (x_)       (y_ + 2) x y
+          else qt2_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt4_I_at = \q:qt4_I. qt4_I_at_ q 0 0 in
 
-type qt4 = ((qt2, qt2), (qt2, qt2)) in
+  let qt4_I_insert_ = \q:qt4_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 2
+      then
+        if y >= y_ + 2
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt2_I_insert_ q[1][1] (x_ + 2) (y_ + 2) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt2_I_insert_ q[1][0] (x_ + 2) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 2
+          then
+          ( ( q[0][0]                                          
+            , qt2_I_insert_ q[0][1] x_ (y_ + 2) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt2_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt4_I_insert = \q:qt4_I. qt4_I_insert_ q 0 0 in
+  let qt4_I_empty = ((qt2_I_empty, qt2_I_empty), (qt2_I_empty, qt2_I_empty)) in
+  
 
-let qt4_at_ = \q:qt4. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 2
-    then
-      if y >= y_ + 2
-        then qt2_at_ q[1][1] (x_ + 2) (y_ + 2) x y
-        else qt2_at_ q[1][0] (x_ + 2) (y_)       x y
-    else
-      if y >= y_ + 2
-        then qt2_at_ q[0][1] (x_)       (y_ + 2) x y
-        else qt2_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt4_at = \q:qt4. qt4_at_ q 0 0 in
+  type qt8_I = ((qt4_I, qt4_I), (qt4_I, qt4_I)) in
 
-let qt4_insert_ = \q:qt4. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 2
-    then
-      if y >= y_ + 2
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , qt2_insert_ q[1][1] (x_ + 2) (y_ + 2) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        , ( qt2_insert_ q[1][0] (x_ + 2) y_ x y v
-          , q[1][1]
-          )
-        )
-    else
-      if y >= y_ + 2
-        then
-        ( ( q[0][0]                                          
-          , qt2_insert_ q[0][1] x_ (y_ + 2) x y v
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt2_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt4_insert = \q:qt4. qt4_insert_ q 0 0 in
-let qt4_empty = ((qt2_empty, qt2_empty), (qt2_empty, qt2_empty)) in
+  let qt8_I_at_ = \q:qt8_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 4
+      then
+        if y >= y_ + 4
+          then qt4_I_at_ q[1][1] (x_ + 4) (y_ + 4) x y
+          else qt4_I_at_ q[1][0] (x_ + 4) (y_)       x y
+      else
+        if y >= y_ + 4
+          then qt4_I_at_ q[0][1] (x_)       (y_ + 4) x y
+          else qt4_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt8_I_at = \q:qt8_I. qt8_I_at_ q 0 0 in
 
+  let qt8_I_insert_ = \q:qt8_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 4
+      then
+        if y >= y_ + 4
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt4_I_insert_ q[1][1] (x_ + 4) (y_ + 4) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt4_I_insert_ q[1][0] (x_ + 4) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 4
+          then
+          ( ( q[0][0]                                          
+            , qt4_I_insert_ q[0][1] x_ (y_ + 4) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt4_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt8_I_insert = \q:qt8_I. qt8_I_insert_ q 0 0 in
+  let qt8_I_empty = ((qt4_I_empty, qt4_I_empty), (qt4_I_empty, qt4_I_empty)) in
+  
 
-type qt8 = ((qt4, qt4), (qt4, qt4)) in
+  type qt16_I = ((qt8_I, qt8_I), (qt8_I, qt8_I)) in
 
-let qt8_at_ = \q:qt8. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 4
-    then
-      if y >= y_ + 4
-        then qt4_at_ q[1][1] (x_ + 4) (y_ + 4) x y
-        else qt4_at_ q[1][0] (x_ + 4) (y_)       x y
-    else
-      if y >= y_ + 4
-        then qt4_at_ q[0][1] (x_)       (y_ + 4) x y
-        else qt4_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt8_at = \q:qt8. qt8_at_ q 0 0 in
+  let qt16_I_at_ = \q:qt16_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 8
+      then
+        if y >= y_ + 8
+          then qt8_I_at_ q[1][1] (x_ + 8) (y_ + 8) x y
+          else qt8_I_at_ q[1][0] (x_ + 8) (y_)       x y
+      else
+        if y >= y_ + 8
+          then qt8_I_at_ q[0][1] (x_)       (y_ + 8) x y
+          else qt8_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt16_I_at = \q:qt16_I. qt16_I_at_ q 0 0 in
 
-let qt8_insert_ = \q:qt8. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 4
-    then
-      if y >= y_ + 4
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
+  let qt16_I_insert_ = \q:qt16_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 8
+      then
+        if y >= y_ + 8
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt8_I_insert_ q[1][1] (x_ + 8) (y_ + 8) x y v
+             )
           )
-        ,  ( q[1][0]
-           , qt4_insert_ q[1][1] (x_ + 4) (y_ + 4) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt8_I_insert_ q[1][0] (x_ + 8) y_ x y v
+            , q[1][1]
+            )
           )
-        , ( qt4_insert_ q[1][0] (x_ + 4) y_ x y v
-          , q[1][1]
+      else
+        if y >= y_ + 8
+          then
+          ( ( q[0][0]                                          
+            , qt8_I_insert_ q[0][1] x_ (y_ + 8) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
           )
-        )
-    else
-      if y >= y_ + 4
-        then
-        ( ( q[0][0]                                          
-          , qt4_insert_ q[0][1] x_ (y_ + 4) x y v
+          else
+          ( ( qt8_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
           )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt4_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt8_insert = \q:qt8. qt8_insert_ q 0 0 in
-let qt8_empty = ((qt4_empty, qt4_empty), (qt4_empty, qt4_empty)) in
+    in
+  let qt16_I_insert = \q:qt16_I. qt16_I_insert_ q 0 0 in
+  let qt16_I_empty = ((qt8_I_empty, qt8_I_empty), (qt8_I_empty, qt8_I_empty)) in
+  
 
+  type qt32_I = ((qt16_I, qt16_I), (qt16_I, qt16_I)) in
 
-type qt16 = ((qt8, qt8), (qt8, qt8)) in
+  let qt32_I_at_ = \q:qt32_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 16
+      then
+        if y >= y_ + 16
+          then qt16_I_at_ q[1][1] (x_ + 16) (y_ + 16) x y
+          else qt16_I_at_ q[1][0] (x_ + 16) (y_)       x y
+      else
+        if y >= y_ + 16
+          then qt16_I_at_ q[0][1] (x_)       (y_ + 16) x y
+          else qt16_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt32_I_at = \q:qt32_I. qt32_I_at_ q 0 0 in
 
-let qt16_at_ = \q:qt16. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 8
-    then
-      if y >= y_ + 8
-        then qt8_at_ q[1][1] (x_ + 8) (y_ + 8) x y
-        else qt8_at_ q[1][0] (x_ + 8) (y_)       x y
-    else
-      if y >= y_ + 8
-        then qt8_at_ q[0][1] (x_)       (y_ + 8) x y
-        else qt8_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt16_at = \q:qt16. qt16_at_ q 0 0 in
+  let qt32_I_insert_ = \q:qt32_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 16
+      then
+        if y >= y_ + 16
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt16_I_insert_ q[1][1] (x_ + 16) (y_ + 16) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt16_I_insert_ q[1][0] (x_ + 16) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 16
+          then
+          ( ( q[0][0]                                          
+            , qt16_I_insert_ q[0][1] x_ (y_ + 16) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt16_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt32_I_insert = \q:qt32_I. qt32_I_insert_ q 0 0 in
+  let qt32_I_empty = ((qt16_I_empty, qt16_I_empty), (qt16_I_empty, qt16_I_empty)) in
+  
 
-let qt16_insert_ = \q:qt16. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 8
-    then
-      if y >= y_ + 8
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , qt8_insert_ q[1][1] (x_ + 8) (y_ + 8) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        , ( qt8_insert_ q[1][0] (x_ + 8) y_ x y v
-          , q[1][1]
-          )
-        )
-    else
-      if y >= y_ + 8
-        then
-        ( ( q[0][0]                                          
-          , qt8_insert_ q[0][1] x_ (y_ + 8) x y v
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt8_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt16_insert = \q:qt16. qt16_insert_ q 0 0 in
-let qt16_empty = ((qt8_empty, qt8_empty), (qt8_empty, qt8_empty)) in
+  type qt1_NOV = <I,(I,I),((I,I),(I,I))> in
+  let qt1_NOV_at_ = \q:qt1_NOV. \x_:I. \y_:I. \x:I. \y:I. q in
+  let qt1_NOV_insert_ = \q:qt1_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV. v in
+  let qt1_NOV_empty = 0 in
+  
 
+  type qt2_NOV = ((qt1_NOV, qt1_NOV), (qt1_NOV, qt1_NOV)) in
 
-type qt32 = ((qt16, qt16), (qt16, qt16)) in
+  let qt2_NOV_at_ = \q:qt2_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 1
+      then
+        if y >= y_ + 1
+          then qt1_NOV_at_ q[1][1] (x_ + 1) (y_ + 1) x y
+          else qt1_NOV_at_ q[1][0] (x_ + 1) (y_)       x y
+      else
+        if y >= y_ + 1
+          then qt1_NOV_at_ q[0][1] (x_)       (y_ + 1) x y
+          else qt1_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt2_NOV_at = \q:qt2_NOV. qt2_NOV_at_ q 0 0 in
 
-let qt32_at_ = \q:qt32. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 16
-    then
-      if y >= y_ + 16
-        then qt16_at_ q[1][1] (x_ + 16) (y_ + 16) x y
-        else qt16_at_ q[1][0] (x_ + 16) (y_)       x y
-    else
-      if y >= y_ + 16
-        then qt16_at_ q[0][1] (x_)       (y_ + 16) x y
-        else qt16_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt32_at = \q:qt32. qt32_at_ q 0 0 in
+  let qt2_NOV_insert_ = \q:qt2_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 1
+      then
+        if y >= y_ + 1
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt1_NOV_insert_ q[1][1] (x_ + 1) (y_ + 1) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt1_NOV_insert_ q[1][0] (x_ + 1) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 1
+          then
+          ( ( q[0][0]                                          
+            , qt1_NOV_insert_ q[0][1] x_ (y_ + 1) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt1_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt2_NOV_insert = \q:qt2_NOV. qt2_NOV_insert_ q 0 0 in
+  let qt2_NOV_empty = ((qt1_NOV_empty, qt1_NOV_empty), (qt1_NOV_empty, qt1_NOV_empty)) in
+  
 
-let qt32_insert_ = \q:qt32. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 16
-    then
-      if y >= y_ + 16
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , qt16_insert_ q[1][1] (x_ + 16) (y_ + 16) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        , ( qt16_insert_ q[1][0] (x_ + 16) y_ x y v
-          , q[1][1]
-          )
-        )
-    else
-      if y >= y_ + 16
-        then
-        ( ( q[0][0]                                          
-          , qt16_insert_ q[0][1] x_ (y_ + 16) x y v
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt16_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt32_insert = \q:qt32. qt32_insert_ q 0 0 in
-let qt32_empty = ((qt16_empty, qt16_empty), (qt16_empty, qt16_empty)) in
+  type qt4_NOV = ((qt2_NOV, qt2_NOV), (qt2_NOV, qt2_NOV)) in
 
+  let qt4_NOV_at_ = \q:qt4_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 2
+      then
+        if y >= y_ + 2
+          then qt2_NOV_at_ q[1][1] (x_ + 2) (y_ + 2) x y
+          else qt2_NOV_at_ q[1][0] (x_ + 2) (y_)       x y
+      else
+        if y >= y_ + 2
+          then qt2_NOV_at_ q[0][1] (x_)       (y_ + 2) x y
+          else qt2_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt4_NOV_at = \q:qt4_NOV. qt4_NOV_at_ q 0 0 in
 
-type qt64 = ((qt32, qt32), (qt32, qt32)) in
+  let qt4_NOV_insert_ = \q:qt4_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 2
+      then
+        if y >= y_ + 2
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt2_NOV_insert_ q[1][1] (x_ + 2) (y_ + 2) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt2_NOV_insert_ q[1][0] (x_ + 2) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 2
+          then
+          ( ( q[0][0]                                          
+            , qt2_NOV_insert_ q[0][1] x_ (y_ + 2) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt2_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt4_NOV_insert = \q:qt4_NOV. qt4_NOV_insert_ q 0 0 in
+  let qt4_NOV_empty = ((qt2_NOV_empty, qt2_NOV_empty), (qt2_NOV_empty, qt2_NOV_empty)) in
+  
 
-let qt64_at_ = \q:qt64. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 32
-    then
-      if y >= y_ + 32
-        then qt32_at_ q[1][1] (x_ + 32) (y_ + 32) x y
-        else qt32_at_ q[1][0] (x_ + 32) (y_)       x y
-    else
-      if y >= y_ + 32
-        then qt32_at_ q[0][1] (x_)       (y_ + 32) x y
-        else qt32_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt64_at = \q:qt64. qt64_at_ q 0 0 in
+  type qt8_NOV = ((qt4_NOV, qt4_NOV), (qt4_NOV, qt4_NOV)) in
 
-let qt64_insert_ = \q:qt64. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 32
-    then
-      if y >= y_ + 32
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , qt32_insert_ q[1][1] (x_ + 32) (y_ + 32) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        , ( qt32_insert_ q[1][0] (x_ + 32) y_ x y v
-          , q[1][1]
-          )
-        )
-    else
-      if y >= y_ + 32
-        then
-        ( ( q[0][0]                                          
-          , qt32_insert_ q[0][1] x_ (y_ + 32) x y v
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt32_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt64_insert = \q:qt64. qt64_insert_ q 0 0 in
-let qt64_empty = ((qt32_empty, qt32_empty), (qt32_empty, qt32_empty)) in
+  let qt8_NOV_at_ = \q:qt8_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 4
+      then
+        if y >= y_ + 4
+          then qt4_NOV_at_ q[1][1] (x_ + 4) (y_ + 4) x y
+          else qt4_NOV_at_ q[1][0] (x_ + 4) (y_)       x y
+      else
+        if y >= y_ + 4
+          then qt4_NOV_at_ q[0][1] (x_)       (y_ + 4) x y
+          else qt4_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt8_NOV_at = \q:qt8_NOV. qt8_NOV_at_ q 0 0 in
 
+  let qt8_NOV_insert_ = \q:qt8_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 4
+      then
+        if y >= y_ + 4
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt4_NOV_insert_ q[1][1] (x_ + 4) (y_ + 4) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt4_NOV_insert_ q[1][0] (x_ + 4) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 4
+          then
+          ( ( q[0][0]                                          
+            , qt4_NOV_insert_ q[0][1] x_ (y_ + 4) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt4_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt8_NOV_insert = \q:qt8_NOV. qt8_NOV_insert_ q 0 0 in
+  let qt8_NOV_empty = ((qt4_NOV_empty, qt4_NOV_empty), (qt4_NOV_empty, qt4_NOV_empty)) in
+  
 
-type qt128 = ((qt64, qt64), (qt64, qt64)) in
+  type qt16_NOV = ((qt8_NOV, qt8_NOV), (qt8_NOV, qt8_NOV)) in
 
-let qt128_at_ = \q:qt128. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 64
-    then
-      if y >= y_ + 64
-        then qt64_at_ q[1][1] (x_ + 64) (y_ + 64) x y
-        else qt64_at_ q[1][0] (x_ + 64) (y_)       x y
-    else
-      if y >= y_ + 64
-        then qt64_at_ q[0][1] (x_)       (y_ + 64) x y
-        else qt64_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt128_at = \q:qt128. qt128_at_ q 0 0 in
+  let qt16_NOV_at_ = \q:qt16_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 8
+      then
+        if y >= y_ + 8
+          then qt8_NOV_at_ q[1][1] (x_ + 8) (y_ + 8) x y
+          else qt8_NOV_at_ q[1][0] (x_ + 8) (y_)       x y
+      else
+        if y >= y_ + 8
+          then qt8_NOV_at_ q[0][1] (x_)       (y_ + 8) x y
+          else qt8_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt16_NOV_at = \q:qt16_NOV. qt16_NOV_at_ q 0 0 in
 
-let qt128_insert_ = \q:qt128. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 64
-    then
-      if y >= y_ + 64
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
+  let qt16_NOV_insert_ = \q:qt16_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 8
+      then
+        if y >= y_ + 8
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt8_NOV_insert_ q[1][1] (x_ + 8) (y_ + 8) x y v
+             )
           )
-        ,  ( q[1][0]
-           , qt64_insert_ q[1][1] (x_ + 64) (y_ + 64) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt8_NOV_insert_ q[1][0] (x_ + 8) y_ x y v
+            , q[1][1]
+            )
           )
-        , ( qt64_insert_ q[1][0] (x_ + 64) y_ x y v
-          , q[1][1]
+      else
+        if y >= y_ + 8
+          then
+          ( ( q[0][0]                                          
+            , qt8_NOV_insert_ q[0][1] x_ (y_ + 8) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
           )
-        )
-    else
-      if y >= y_ + 64
-        then
-        ( ( q[0][0]                                          
-          , qt64_insert_ q[0][1] x_ (y_ + 64) x y v
+          else
+          ( ( qt8_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
           )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt64_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt128_insert = \q:qt128. qt128_insert_ q 0 0 in
-let qt128_empty = ((qt64_empty, qt64_empty), (qt64_empty, qt64_empty)) in
+    in
+  let qt16_NOV_insert = \q:qt16_NOV. qt16_NOV_insert_ q 0 0 in
+  let qt16_NOV_empty = ((qt8_NOV_empty, qt8_NOV_empty), (qt8_NOV_empty, qt8_NOV_empty)) in
+  
 
+  type qt32_NOV = ((qt16_NOV, qt16_NOV), (qt16_NOV, qt16_NOV)) in
 
-type qt256 = ((qt128, qt128), (qt128, qt128)) in
+  let qt32_NOV_at_ = \q:qt32_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 16
+      then
+        if y >= y_ + 16
+          then qt16_NOV_at_ q[1][1] (x_ + 16) (y_ + 16) x y
+          else qt16_NOV_at_ q[1][0] (x_ + 16) (y_)       x y
+      else
+        if y >= y_ + 16
+          then qt16_NOV_at_ q[0][1] (x_)       (y_ + 16) x y
+          else qt16_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt32_NOV_at = \q:qt32_NOV. qt32_NOV_at_ q 0 0 in
 
-let qt256_at_ = \q:qt256. \x_:I. \y_:I. \x:I. \y:I.
-  if x >= x_ + 128
-    then
-      if y >= y_ + 128
-        then qt128_at_ q[1][1] (x_ + 128) (y_ + 128) x y
-        else qt128_at_ q[1][0] (x_ + 128) (y_)       x y
-    else
-      if y >= y_ + 128
-        then qt128_at_ q[0][1] (x_)       (y_ + 128) x y
-        else qt128_at_ q[0][0] (x_)       (y_)       x y
-  in
-let qt256_at = \q:qt256. qt256_at_ q 0 0 in
+  let qt32_NOV_insert_ = \q:qt32_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 16
+      then
+        if y >= y_ + 16
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt16_NOV_insert_ q[1][1] (x_ + 16) (y_ + 16) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt16_NOV_insert_ q[1][0] (x_ + 16) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 16
+          then
+          ( ( q[0][0]                                          
+            , qt16_NOV_insert_ q[0][1] x_ (y_ + 16) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt16_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt32_NOV_insert = \q:qt32_NOV. qt32_NOV_insert_ q 0 0 in
+  let qt32_NOV_empty = ((qt16_NOV_empty, qt16_NOV_empty), (qt16_NOV_empty, qt16_NOV_empty)) in
+  
 
-let qt256_insert_ = \q:qt256. \x_:I. \y_:I. \x:I. \y:I. \v:I.
-  if x >= x_ + 128
-    then
-      if y >= y_ + 128
-        then
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , qt128_insert_ q[1][1] (x_ + 128) (y_ + 128) x y v
-           )
-        )
-        else
-        ( ( q[0][0]                                          
-          , q[0][1]
-          )
-        , ( qt128_insert_ q[1][0] (x_ + 128) y_ x y v
-          , q[1][1]
-          )
-        )
-    else
-      if y >= y_ + 128
-        then
-        ( ( q[0][0]                                          
-          , qt128_insert_ q[0][1] x_ (y_ + 128) x y v
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-        else
-        ( ( qt128_insert_ q[0][0] x_ y_ x y v
-          , q[0][1]
-          )
-        ,  ( q[1][0]
-           , q[1][1]
-           )
-        )
-  in
-let qt256_insert = \q:qt256. qt256_insert_ q 0 0 in
-let qt256_empty = ((qt128_empty, qt128_empty), (qt128_empty, qt128_empty)) in
-
-
+let __internal_btree_set_I_eq = \x:I. \y:I. x == y in
 let __internal_btree_set_I_lte = \x:I. \y:I. x <= y in
 type __internal_btree_set_I_maybe = <I, I> in
 
@@ -525,8 +648,17 @@ let btree_set_I_from_list = \li:[I].
   __internal_btree_set_I_from_list 1 len sorted
   in
 
+let btree_set_I_find /*: I -> btree_set_I -> I*/ = \x:I.
+  destruct
+    ( \_:I. 0
+    , \t:(btree_set_I, I, btree_set_I).
+      0
+    )
+  in
 
 
+
+let __internal_btree_set_II_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
 let __internal_btree_set_II_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
 type __internal_btree_set_II_maybe = <I, (I, I)> in
 
@@ -580,6 +712,87 @@ let btree_set_II_from_list = \li:[(I, I)].
   let len = __internal_btree_set_II_length_list li in
   let sorted = __internal_btree_set_II_sort_list li in
   __internal_btree_set_II_from_list 1 len sorted
+  in
+
+let btree_set_II_find /*: (I, I) -> btree_set_II -> I*/ = \x:(I, I).
+  destruct
+    ( \_:I. 0
+    , \t:(btree_set_II, (I, I), btree_set_II).
+      0
+    )
+  in
+
+
+
+let __internal_btree_set_V_eq = 
+let __cmpeq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\x:((I,I),(I,I)). \y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmpeq x[1] y[1] else 0
+ in
+let __internal_btree_set_V_lte = 
+let __cmplte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let __cmpeq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\x:((I,I),(I,I)). \y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmplte x[1] y[1] else __cmplte x[0] y[0]
+ in
+type __internal_btree_set_V_maybe = <I, ((I,I),(I,I))> in
+
+let __internal_btree_set_V_partition_list =
+  fold
+    ( \x:((I,I),(I,I)). \acc:([((I,I),(I,I))], [((I,I),(I,I))]).
+        (cons x with acc[1], acc[0])
+    ) with (empty ((I,I),(I,I)), empty ((I,I),(I,I)))
+  in
+
+letrec __internal_btree_set_V_fusion_list : [((I,I),(I,I))] -> [((I,I),(I,I))] -> [((I,I),(I,I))] = \l:[((I,I),(I,I))]. \l_:[((I,I),(I,I))].
+  if isempty l
+    then l_
+  else if isempty l_
+    then l
+  else if __internal_btree_set_V_lte (head l) (head l_)
+    then cons (head l) with (__internal_btree_set_V_fusion_list (tail l) l_)
+  else
+    cons (head l_) with (__internal_btree_set_V_fusion_list (tail l_) l)
+  in
+
+letrec __internal_btree_set_V_sort_list : [((I,I),(I,I))] -> [((I,I),(I,I))] = \l:[((I,I),(I,I))].
+  if isempty l
+    then empty ((I,I),(I,I))
+  else if isempty (tail l)
+    then l
+  else
+    let p = (\ok:([((I,I),(I,I))],[((I,I),(I,I))]). ok) (__internal_btree_set_V_partition_list l) in
+    __internal_btree_set_V_fusion_list (__internal_btree_set_V_sort_list p[0]) (__internal_btree_set_V_sort_list p[1])
+  in
+
+let __internal_btree_set_V_length_list = fold (\_:((I,I),(I,I)). \acc:I. acc + 1) with 0 in
+
+type btree_set_V = <I, (?, ((I,I),(I,I)), ?)> in
+let btree_set_V_empty = make btree_set_V 0 0 in
+let btree_set_V_node = \l:btree_set_V. \x:((I,I),(I,I)). \r:btree_set_V. make btree_set_V 1 (l, x, r) in
+
+letrec __internal_btree_set_V_from_list : I -> I -> [((I,I),(I,I))] -> btree_set_V = \b:I. \n:I. \li:[((I,I),(I,I))]. 
+  if isempty li
+    then btree_set_V_empty
+    else 
+      let p = (natfold (\_:I. \p:([((I,I),(I,I))],[((I,I),(I,I))]). (cons (head p[1]) with p[0], tail p[1])) with (empty ((I,I),(I,I)), li)) (n / 2) in
+      let l = __internal_btree_set_V_from_list (not b) (n / 2) p[0] in
+      let r = __internal_btree_set_V_from_list b ((n - 1) / 2) (tail p[1]) in
+      if b
+        then btree_set_V_node l (head p[1]) r
+        else btree_set_V_node r (head p[1]) l
+  in
+
+let btree_set_V_from_list = \li:[((I,I),(I,I))].
+  let len = __internal_btree_set_V_length_list li in
+  let sorted = __internal_btree_set_V_sort_list li in
+  __internal_btree_set_V_from_list 1 len sorted
+  in
+
+let btree_set_V_find /*: ((I,I),(I,I)) -> btree_set_V -> I*/ = \x:((I,I),(I,I)).
+  destruct
+    ( \_:I. 0
+    , \t:(btree_set_V, ((I,I),(I,I)), btree_set_V).
+      0
+    )
   in
 
 
@@ -712,48 +925,67 @@ let worldSize = \world:worldState.
   (length_I (head world[0]), length_LI world[0]) in
 
 type node = (I, I) in
-type nodeId = I in
-type vertex = (nodeId, nodeId) in
-type vertexId = I in
-let normaliseVertex = \v:vertex. (min v[0] v[1], max v[0] v[1]) in
-type nodeOrVertex = <I, nodeId, vertexId> in
+let node_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let node_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+type nodeSet = btree_set_II in
+type vertex = (node, node) in
+type vertexSet = btree_set_V in
+// let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then  in
+type nodeOrVertex = <I, node, vertex> in
 let nodeOrVertexWall = 0 in
 let nodeOrVertexNode = 1 in
 let nodeOrVertexVertex = 2 in
-type graph = ([node], [vertex], [[nodeOrVertex]]) in
-type userState = ((I,I),qt256,graph,lambdaManStatus,[ghostStatus],fruitStatus) in
+type graph = (nodeSet, vertexSet, qt32_NOV) in
 
-let isPassageQt = \q:qt256. \p:(I, I).
-  let slot = qt256_at q p[0] p[1] in
-  slot /= mapWall
+let gNodeSet       = \g:graph. g[0] in
+let gVertexSet     = \g:graph. g[1] in
+let gNOV           = \g:graph. g[2] in
+
+type userState = ((I,I),qt32_I,graph,lambdaManStatus,[ghostStatus],fruitStatus,I,btree_set_II,btree_set_II,(I,I)) in
+
+let uWorldSize     = \u:userState. u[0] in
+let uWorldMap      = \u:userState. u[1] in
+let uGraph         = \u:userState. u[2] in
+let uLambdaStatus  = \u:userState. u[3] in
+let uGhostStatus   = \u:userState. u[4] in
+let uFruitStatus   = \u:userState. u[5] in
+let uUTC           = \u:userState. u[6] in
+let uPillSet       = \u:userState. u[7] in
+let uPowerPillSet  = \u:userState. u[8] in
+let uFruitPosition = \u:userState. u[9] in
+
+let isPassageQt = \ws:(I,I). \q:qt32_I. \p:(I, I).
+  if inBounds ws p
+    then
+      let slot = qt32_I_at q p[0] p[1] in
+      slot /= mapWall
+  else 0
   in
 
 let isPassage = \u:userState. \p:(I, I).
-  if inBounds u[0] p
+  if inBounds (uWorldSize u) p
     then
-      let slot = qt256_at u[1] p[0] p[1] in
+      let slot = qt32_I_at (uWorldMap u) p[0] p[1] in
       slot /= mapWall
     else 0
   in
 
 let isCorrectMove = \u:userState. \d:direction.
-  isPassage u (applyDir d u[3][1])
+  isPassage u (applyDir d (uLambdaStatus u)[1])
   in
-
-let findGhost = \world:worldState. \p:(I, I). 0 in
 
 let distanceNearestGhost =
   \u:userState.
   \p:(I, I). (
     fold (\g:ghostStatus. \d:I. min d (distance g[1] p)) with 512
-  ) u[4] in
+  ) (uGhostStatus u) in
 let distanceNearestPill =
   \u:userState.
   \p:(I, I). 0
   in
 
 let scoreMove = \u:userState. \d:direction.
-  let next = applyDir d u[3][1] in
+  let next = applyDir d (uLambdaStatus u)[1] in
   if isCorrectMove u d
     then
      let dPill = distanceNearestPill u next in
@@ -795,22 +1027,98 @@ let pickMove = \u:userState.
 let qtFromWorld = \w:[[I]].(
   ( fold (
       \l:[I].
-      \acc1:(I, qt256).
+      \acc1:(I, qt32_I).
       let x = (
           fold (
             \s:I.
-            \acc2:(I, qt256).
+            \acc2:(I, qt32_I).
             ( acc2[0]+1
-            , qt256_insert acc2[1] acc2[0] acc1[0] s
+            , qt32_I_insert acc2[1] acc2[0] acc1[0] s
             )
           ) with (0, acc1[1])
         ) l
       in (acc1[0]+1, x[1])
-    ) with (0, qt256_empty)
+    ) with (0, qt32_I_empty)
   ) w)[1]
   in
 
-let graphFromWorld = \wSize:(I,I). \world:qt256.
+let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
+  let pillList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if qt32_I_at world x y == mapPill
+              then cons (x, y) with acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  btree_set_II_from_list pillList
+in
+
+let makePowerPillSet = \wSize:(I,I). \world:qt32_I.
+  let pillList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if qt32_I_at world x y == mapPowerPill
+              then cons (x, y) with acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  btree_set_II_from_list pillList
+in
+
+let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
+  let fruitList =
+    ( natfold
+      ( \x_:I.
+        \acc_:[node].
+        let x = wSize[0]-x_ in
+        ( natfold
+          ( \y_:I.
+            \acc:[node].
+            let y = wSize[1]-y_ in
+            if qt32_I_at world x y == mapFruit
+              then cons (x, y) with acc
+              else acc
+          )
+          with acc_
+        ) wSize[1]
+      )
+      with empty node
+    ) wSize[0]
+    in
+  head fruitList
+in
+
+letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
+  let dp = applyDir d p in
+  if isPassageQt wSize world dp
+    then getWay d wSize world dp
+    else p
+  in
+
+let graphFromWorld = \wSize:(I,I). \world:qt32_I.
   let nodeList =
     ( natfold
       ( \x_:I.
@@ -820,11 +1128,11 @@ let graphFromWorld = \wSize:(I,I). \world:qt256.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if not (isPassageQt world (x, y))
+            if not (isPassageQt wSize world (x, y))
               then acc
-            else if and (and (isPassageQt world (x+1, y)) (isPassageQt world (x-1, y))) (and (not (isPassageQt world (x, y+1))) (not (isPassageQt world (x, y-1))))
+            else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
               then acc
-            else if and (and (isPassageQt world (x, y+1)) (isPassageQt world (x, y-1))) (and (not (isPassageQt world (x+1, y))) (not (isPassageQt world (x-1, y))))
+            else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
               then acc
             else cons (x, y) with acc
           )
@@ -835,7 +1143,18 @@ let graphFromWorld = \wSize:(I,I). \world:qt256.
     ) wSize[0]
     in
   let nodeSet = btree_set_II_from_list nodeList in
-  trace nodeSet in (nodeList, empty I, empty [I])
+  let vertexList =
+    ( fold (\p:node. \acc:[vertex].
+        let upp = getWay dirUp wSize world p in
+        let leftp = getWay dirLeft wSize world p in
+        let acc_ = if node_eq upp p then acc else cons (upp, p) with acc in
+        let acc__ = if node_eq leftp p then acc else cons (leftp, p) with acc_ in
+        acc__
+      ) with (empty vertex)
+    ) nodeList
+    in
+  let vertexSet = btree_set_V_from_list vertexList in
+  (nodeSet, vertexSet, qt32_NOV_empty)
   in
 
 
@@ -845,7 +1164,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt256.
 let makeUserState = \world:worldState.
   let ws = worldSize world       in
   let qt = qtFromWorld world[0] in
-  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3])
+  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3], 1, makeNormalPillSet ws qt, makePowerPillSet ws qt, makeFruitPosition ws qt)
   in
 
 type stepType = userState -> worldState -> (userState, direction) in
@@ -855,7 +1174,7 @@ type mainType = worldState -> ? -> (userState, stepType) in
 let step =
     \u     : userState.
     \world : worldState.
-    let newU = (u[0], u[1], u[2], world[1], world[2], world[3]) in
+    let newU = (uWorldSize u, uWorldMap u, uGraph u, world[1], world[2], world[3], uUTC u, uPillSet u, uPowerPillSet u, uFruitPosition u) in
     (newU, pickMove newU)
   in
 

@@ -51,6 +51,7 @@ pacman filename = do
       case typecheck0 hl of
         Left err -> putStrLn . show $ err
         Right hl' -> do
+          -- putStrLn . show $ hl'
           putStrLn "Compiles to : "
           -- putStrLn . showLabelProgram . runHL $ HL.toPacman hl'
           putStrLn "UNLABEL :"

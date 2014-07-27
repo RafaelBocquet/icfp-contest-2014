@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-def make_btree_set(name, ty_key, lte):
+def make_btree_set(name, ty_key, eq, lte):
   print(
 """
-let __internal_btree_set_{0}_lte = {2} in
+let __internal_btree_set_{0}_eq = {2} in
+let __internal_btree_set_{0}_lte = {3} in
 type __internal_btree_set_{0}_maybe = <I, {1}> in
 
 let __internal_btree_set_{0}_partition_list =
@@ -58,7 +59,27 @@ let btree_set_{0}_from_list = \\li:[{1}].
   __internal_btree_set_{0}_from_list 1 len sorted
   in
 
-""".format(name, ty_key, lte))
+let btree_set_{0}_find /*: {1} -> btree_set_{0} -> I*/ = \\x:{1}.
+  destruct
+    ( \\_:I. 0
+    , \\t:(btree_set_{0}, {1}, btree_set_{0}).
+      0
+    )
+  in
 
-make_btree_set("I", "I", "\\x:I. \\y:I. x <= y")
-make_btree_set("II", "(I, I)", "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]")
+""".format(name, ty_key, eq, lte))
+
+make_btree_set("I", "I", "\\x:I. \\y:I. x == y", "\\x:I. \\y:I. x <= y")
+make_btree_set("II", "(I, I)"
+  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]"
+  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]")
+make_btree_set("V", "((I,I),(I,I))"
+, """
+let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\\x:((I,I),(I,I)). \\y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmpeq x[1] y[1] else 0
+"""
+, """
+let __cmplte = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\\x:((I,I),(I,I)). \\y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmplte x[1] y[1] else __cmplte x[0] y[0]
+""")

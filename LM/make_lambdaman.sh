@@ -4,5 +4,4 @@
   python make_quadtree.py;
   python make_btree.py;
   cat lambdaman_source.hl
-# echo " btree_set_I_from_list (cons 2 with cons 1 with cons (0-95) with empty I)"
 ) > lambdaman.hl
