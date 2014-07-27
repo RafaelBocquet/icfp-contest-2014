@@ -139,8 +139,8 @@ letrec btree_map_{0}_update : {1} -> ({4} -> {4}) -> btree_map_{0} -> btree_map_
         if __internal_btree_map_{0}_eq x t[1]
           then btree_map_{0}_node t[0] t[1] (f t[2]) t[3]
         else if __internal_btree_map_{0}_lte x t[1]
-          then btree_map_{0}_update x f t[0]
-          else btree_map_{0}_update x f t[3]
+          then btree_map_{0}_node (btree_map_{0}_update x f t[0]) t[1] t[2] t[3]
+          else btree_map_{0}_node t[0] t[1] t[2] (btree_map_{0}_update x f t[3])
     )
   in
 

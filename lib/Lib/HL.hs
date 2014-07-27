@@ -381,7 +381,7 @@ typecheck (me, mt) e = do
       b2' <- typecheck (me, mt) b2
       if exprTypeHash c' /= hash TInt
         then throwError $ ConditionalNotInt expr
-      else if exprTypeHash b1' /= exprTypeHash b2'
+      else if exprTypeHash b1' /= exprTypeHash b2' && exprType b1' /= exprType b2'
         then throwError $ IfBranchNotSameType expr
         else return $ EIf 0 (exprType b1') c' b1' b2'
     typecheck' (me, mt) expr@(ELambda _ _ n t e) = do
@@ -416,7 +416,7 @@ typecheck (me, mt) e = do
       x' <- typecheck (me, mt) x
       case exprType f' of
         TFunc a (TFunc sigma sigma') -> 
-          if hash sigma == hash sigma' && hash sigma == exprTypeHash x'
+          if sigma == sigma' && (hash sigma == exprTypeHash x' || sigma == exprType x')
             then return $ EListFold 0 (TFunc (TList a) sigma) f' x'
             else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
@@ -448,7 +448,7 @@ typecheck (me, mt) e = do
       x' <- typecheck (me, mt) x
       case exprType f' of
         TFunc TInt (TFunc sigma sigma') -> 
-          if sigma == sigma' && hash sigma == exprTypeHash x'
+          if sigma == sigma' && (hash sigma == exprTypeHash x' || sigma == exprType x')
             then return $ ENatFold 0 (TFunc TInt sigma) f' x'
             else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
@@ -552,19 +552,19 @@ compile (ELet _ _ n v e)        = compile (EApp (hash $ exprType e) (exprType e)
 compile (ELetRec _ _ n t v e)   = do
   id <- get
   increaseState
-  let blockName = "letrec." ++ show id
+  let blockName = "lr." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
   
   id <- get
   increaseState
-  let lambdaBlock = "lambda." ++ show id
+  let lambdaBlock = "l." ++ show id
   lambdaBegin <- blockBegin lambdaBlock
   lambdaEnd <- blockEnd lambdaBlock
 
   id <- get
   increaseState
-  let lambda2Block = "lambda2." ++ show id
+  let lambda2Block = "l2." ++ show id
   lambda2Begin <- blockBegin lambda2Block
   lambda2End <- blockEnd lambda2Block
 
@@ -627,15 +627,15 @@ compile (EIf _ _ c b1 b2)      = do
   id <- get
   increaseState
   let blockName = "if." ++ show id
-  thenbegin <- blockBegin $ blockName ++ ".then"
-  elsebegin <- blockBegin $ blockName ++ ".else"
+  thenbegin <- blockBegin $ blockName ++ ".t"
+  elsebegin <- blockBegin $ blockName ++ ".e"
   bend <- blockEnd blockName
   tell [LDC $ VInt 0, TSEL (VLabel bend) (VLabel bend)]
   block blockName $ do
-    block "then" $ do
+    block "t" $ do
       compile b1
       tell [JOIN]
-    block "else" $ do
+    block "e" $ do
       compile b2
       tell [JOIN]
   compile c
@@ -643,7 +643,7 @@ compile (EIf _ _ c b1 b2)      = do
 compile (ELambda _ _ n t e)     = do
   id <- get
   increaseState
-  let blockName = "lambda." ++ show id
+  let blockName = "l." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
   tell [LDC $ VInt 0, TSEL (VLabel bend) (VLabel bend)]
@@ -680,33 +680,33 @@ compile (ETuple _ _ (e:es))     = compileTuple (e:es)
 compile (EListFold _ _ f x)         = do
   id <- get
   increaseState
-  let blockName = "fold." ++ show id
+  let blockName = "f." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
   
   id' <- get
   increaseState
-  let lambdaBlock = "lambda." ++ show id'
+  let lambdaBlock = "l." ++ show id'
   lambdaBegin <- blockBegin lambdaBlock
   lambdaEnd <- blockEnd lambdaBlock
   
   id' <- get
   increaseState
-  let lambda2Block = "lambda2." ++ show id'
+  let lambda2Block = "l2." ++ show id'
   lambda2Begin <- blockBegin lambda2Block
   lambda2End <- blockEnd lambda2Block
 
   tell [LDC $ VInt 0, TSEL (VLabel lambda2End) (VLabel lambda2End)]
   block blockName $ bindVariable "?" $ bindVariable "?" $ bindVariable "?" $ do
-    thenbegin <- blockBegin "then"
-    elsebegin <- blockBegin "else"
+    thenbegin <- blockBegin "t"
+    elsebegin <- blockBegin "e"
     tell [LD (VInt 0) (VInt 0), CDR, ATOM, TSEL (VLabel thenbegin) (VLabel elsebegin)]
-    block "then" $ tell
+    block "t" $ tell
       [ LD (VInt 0) (VInt 0)
       , CAR
       , RTN
       ]
-    block "else" $ do
+    block "e" $ do
       tell
         [ LD (VInt 0) (VInt 0)
         , CAR
@@ -760,28 +760,28 @@ compile (EListTail _ _ l)           = do
 compile (ENatFold _ _ f x)         = do
   id <- get
   increaseState
-  let blockName = "natfold." ++ show id
+  let blockName = "nf." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
   
   id' <- get
   increaseState
-  let lambdaBlock = "lambda." ++ show id'
+  let lambdaBlock = "l." ++ show id'
   lambdaBegin <- blockBegin lambdaBlock
   lambdaEnd <- blockEnd lambdaBlock
   
   id' <- get
   increaseState
-  let lambda2Block = "lambda2." ++ show id'
+  let lambda2Block = "l2." ++ show id'
   lambda2Begin <- blockBegin lambda2Block
   lambda2End <- blockEnd lambda2Block
 
   tell [LDC $ VInt 0, TSEL (VLabel lambda2End) (VLabel lambda2End)]
   block blockName $ bindVariable "?" $ bindVariable "?" $ bindVariable "?" $ do
-    thenbegin <- blockBegin "then"
-    elsebegin <- blockBegin "else"
+    thenbegin <- blockBegin "t"
+    elsebegin <- blockBegin "e"
     tell [LD (VInt 0) (VInt 0), CDR, TSEL (VLabel thenbegin) (VLabel elsebegin)]
-    block "then" $ do
+    block "t" $ do
       tell
         [ LD (VInt 0) (VInt 0)
         , CAR
@@ -800,7 +800,7 @@ compile (ENatFold _ _ f x)         = do
         , LD (VInt 1) (VInt 0)
         , TAP (VInt 1)
         ]
-    block "else" $ tell
+    block "e" $ tell
       [ LD (VInt 0) (VInt 0)
       , CAR
       , RTN
@@ -826,31 +826,31 @@ compile (ENatFold _ _ f x)         = do
 compile (EWhile _ _ f u x)         = do
   id <- get
   increaseState
-  let blockName = "while." ++ show id
+  let blockName = "w." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
   
   id' <- get
   increaseState
-  let lambdaBlock = "lambda." ++ show id'
+  let lambdaBlock = "l." ++ show id'
   lambdaBegin <- blockBegin lambdaBlock
   lambdaEnd <- blockEnd lambdaBlock
   
   id' <- get
   increaseState
-  let lambda2Block = "lambda2." ++ show id'
+  let lambda2Block = "l2." ++ show id'
   lambda2Begin <- blockBegin lambda2Block
   lambda2End <- blockEnd lambda2Block
 
   tell [LDC $ VInt 0, TSEL (VLabel lambda2End) (VLabel lambda2End)]
   block blockName $ bindVariable "?" $ bindVariable "?" $ bindVariable "?" $ do
-    thenbegin <- blockBegin "then"
-    elsebegin <- blockBegin "else"
+    thenbegin <- blockBegin "t"
+    elsebegin <- blockBegin "e"
     tell [LD (VInt 0) (VInt 0)]
     compile u
     tell [AP (VInt 1)]
     tell [TSEL (VLabel thenbegin) (VLabel elsebegin)]
-    block "then" $ do
+    block "t" $ do
       tell
         [ LD (VInt 0) (VInt 0)
         ]
@@ -860,7 +860,7 @@ compile (EWhile _ _ f u x)         = do
         , LD (VInt 1) (VInt 0)
         , TAP (VInt 1)
         ]
-    block "else" $ tell
+    block "e" $ tell
       [ LD (VInt 0) (VInt 0)
       , RTN
       ]
@@ -888,7 +888,7 @@ compile (EVariantDestruct _ _ fs) = do
   let n = length fs
   id <- get
   increaseState
-  let blockName = "destruct." ++ show id
+  let blockName = "ds." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
 
@@ -908,12 +908,12 @@ compile (EVariantDestruct _ _ fs) = do
             increaseState
             let ifBlock = "if." ++ show id
             ifEnd <- blockEnd ifBlock
-            thenbegin <- blockBegin $ "if." ++ show id ++ ".then"
-            elsebegin <- blockBegin $ "if." ++ show id ++ ".else"
+            thenbegin <- blockBegin $ "if." ++ show id ++ ".t"
+            elsebegin <- blockBegin $ "if." ++ show id ++ ".e"
             tell [LDC (VInt 0), TSEL (VLabel ifEnd) (VLabel ifEnd)]
             block ifBlock $ do
-              block "then" $ compileVariantDestruct (k+1) j
-              block "else" $ compileVariantDestruct i k
+              block "t" $ compileVariantDestruct (k+1) j
+              block "e" $ compileVariantDestruct i k
             tell [LD (VInt 0) (VInt 0), CAR, LDC (VInt k), CGT, TSEL (VLabel thenbegin) (VLabel elsebegin)]
 compile (ETrace _ _ a b) = do
   compile a

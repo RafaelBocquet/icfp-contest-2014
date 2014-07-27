@@ -1,0 +1,321 @@
+INT LambdaMan1
+MOV [10] A
+MOV [11] B
+
+INT GhostIndex
+INT GhostPosition
+
+SUB A [20]
+SUB B [21]
+
+JEQ %xok A 255
+JEQ %xok A 0
+JEQ %xok A 1
+MOV PC %init
+%xok:
+JEQ %yok B 255
+JEQ %yok B 0
+JEQ %yok B 1
+%init:
+MOV F 100
+  %bouclei:
+    MOV [F] 0
+    INC F
+  JLT %bouclei F 200
+  INT Debug
+%yok:
+
+INT GhostIndex
+INT GhostPosition
+
+MOV [20] A
+MOV [21] B
+
+INT GhostIndex
+INT GhostDirection
+MOV [30] A
+MOV [31] B
+
+MOV [0] 1
+MOV [1] 1
+MOV [2] 1
+MOV [3] 1
+MOV [4] 4
+
+ADD B 2
+JLT %modulo B 4
+  SUB B 4
+%modulo:
+
+MOV [B] 0
+
+// left
+MOV C [20]
+MOV D [21]
+MOV E [21]
+MOV F [21]
+DEC D
+INC F
+%whileleft:
+
+  DEC C
+  MOV A C
+  MOV B E
+  INT MapData
+  JEQ %deadendleft A 0
+
+  MOV A C
+  MOV B D
+  INT MapData
+  JGT %notdeadendleft A 0
+  MOV A C
+  MOV B F
+  INT MapData
+  JGT %notdeadendleft A 0
+  
+  MOV A C
+  MOV B E
+  XOR A [10]
+  XOR B [11]
+  OR A B
+  JEQ %notdeadendleft A 0
+  
+MOV PC %whileleft
+
+%deadendleft:
+MOV [3] 0
+DEC [4]
+%notdeadendleft:
+
+// right
+MOV C [20]
+MOV D [21]
+MOV E [21]
+MOV F [21]
+DEC D
+INC F
+%whileright:
+
+  INC C
+  MOV A C
+  MOV B E
+  INT MapData
+  JEQ %deadendright A 0
+  
+  MOV A C
+  MOV B D
+  INT MapData
+  JGT %notdeadendright A 0
+  MOV A C
+  MOV B F
+  INT MapData
+  JGT %notdeadendright A 0
+  
+  MOV A C
+  MOV B E
+  XOR A [10]
+  XOR B [11]
+  OR A B
+  JEQ %notdeadendright A 0
+  
+MOV PC %whileright
+
+%deadendright:
+MOV [1] 0
+DEC [4]
+%notdeadendright:
+
+// up
+MOV C [21]
+MOV D [20]
+MOV E [20]
+MOV F [20]
+DEC D
+INC F
+%whileup:
+
+  DEC C
+  MOV A E
+  MOV B C
+  INT MapData
+  JEQ %deadendup A 0
+
+  MOV A D
+  MOV B C
+  INT MapData
+  JGT %notdeadendup A 0
+  MOV A F
+  MOV B C
+  INT MapData
+  JGT %notdeadendup A 0
+  
+  MOV A E
+  MOV B C
+  XOR A [10]
+  XOR B [11]
+  OR A B
+  JEQ %notdeadendup A 0
+  
+MOV PC %whileup
+
+%deadendup:
+MOV [0] 0
+DEC [4]
+%notdeadendup:
+
+// down
+MOV C [21]
+MOV D [20]
+MOV E [20]
+MOV F [20]
+DEC D
+INC F
+%whiledown:
+
+  INC C
+  MOV A E
+  MOV B C
+  INT MapData
+  JEQ %deadenddown A 0
+
+  MOV A D
+  MOV B C
+  INT MapData
+  JGT %notdeadenddown A 0
+  MOV A F
+  MOV B C
+  INT MapData
+  JGT %notdeadenddown A 0
+  
+  MOV A E
+  MOV B C
+  XOR A [10]
+  XOR B [11]
+  OR A B
+  JEQ %notdeadenddown A 0
+  
+MOV PC %whiledown
+
+%deadenddown:
+MOV [2] 0
+DEC [4]
+%notdeadenddown:
+
+JEQ %fright [30] 1
+
+MOV F 10
+%boucle:
+  MOV A F
+  MUL A 3
+  ADD A 100
+  MOV B A
+  INC B
+  MOV C B
+  INC C
+  
+  JEQ %then1 [20] [A]
+  MOV PC %continue
+  %then1:
+  JEQ %then2 [21] [B]
+  MOV PC %continue
+  %then2:
+    MOV D [C]
+    MOV [D] 0
+  %continue:
+  
+  JLT %forget [4] 3
+    MOV D A
+    MOV E A
+    ADD E 3
+    MOV [E] [D]
+    INC D
+    INC E
+    MOV [E] [D]
+    INC D
+    INC E
+    MOV [E] [D]
+  %forget:
+  
+  DEC F
+JLT %boucle F 255
+
+MOV A [31]
+
+MOV [5] 0
+
+JEQ %notright [1] 0
+JEQ %notright [20] [10]
+JGT %notright [20] [10]
+  MOV A 1
+  INC [5]
+%notright:
+JEQ %notup [0] 0
+JEQ %notup [21] [11]
+JLT %notup [21] [11]
+  MOV A 0
+  INC [5]
+%notup:
+JEQ %notleft [3] 0
+JEQ %notleft [20] [10]
+JLT %notleft [20] [10]
+  MOV A 3
+  INC [5]
+%notleft:
+JEQ %notdown [2] 0
+JEQ %notdown [21] [11]
+JGT %notdown [21] [11]
+  MOV A 2
+  INC [5]
+%notdown:
+
+JGT %move [5] 0
+
+JEQ %notright2 [1] 0
+  MOV A 1
+%notright2:
+JEQ %notup2 [0] 0
+  MOV A 0
+%notup2:
+JEQ %notleft2 [3] 0
+  MOV A 3
+%notleft2:
+JEQ %notdown2 [2] 0
+  MOV A 2
+%notdown2:
+
+%move:
+
+JLT %forget2 [4] 3
+  MOV [100] [20]
+  MOV [101] [21]
+  MOV [102] A
+%forget2:
+
+INT OutGhostDirection
+
+HLT
+
+%fright:
+
+MOV A [31]
+
+JEQ %notrightfr [1] 0
+JLT %notrightfr [20] [10]
+  MOV A 1
+%notrightfr:
+JEQ %notupfr [0] 0
+JGT %notupfr [21] [11]
+  MOV A 0
+%notupfr:
+JEQ %notleftfr [3] 0
+JGT %notleftfr [20] [10]
+  MOV A 3
+%notleftfr:
+JEQ %notdownfr [2] 0
+JLT %notdownfr [21] [11]
+  MOV A 2
+%notdownfr:
+
+INT OutGhostDirection
+
+HLT

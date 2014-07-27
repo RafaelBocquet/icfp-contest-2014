@@ -474,34 +474,34 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
     ) with qt32_I_empty) nodeList
   in
   let vertexPillMap = btree_map_V_from_set_generate
-    (\v:vertex.
-      if v[0][0] == v[1][0] // Vertical
-        then
-          (natfold (
-              \y_:I. \acc:I.
-              let x = v[0][0] in
-              let y = v[0][1] + y_ in
-              acc + (if btree_set_II_find (x,y) pillSet then 1 else 0)
-            ) with 0
-          ) (v[1][1] - v[0][1] - 1)
-        else
-          (natfold (
-              \x_:I. \acc:I.
-              let x = v[0][0] + x_ in
-              let y = v[0][1] in
-              acc + (if btree_set_II_find (x,y) pillSet then 1 else 0)
-            ) with 0
-          ) (v[1][0] - v[0][0] - 1)
+    (\v:vertex. 0
+      // if v[0][0] == v[1][0] // Vertical
+      //   then 0
+      //     // (natfold (
+      //     //     \y_:I. \acc:I.
+      //     //     let x = v[0][0] in
+      //     //     let y = v[0][1] + y_ in
+      //     //     acc + (if btree_set_II_find (x,y) pillSet then 1 else 0)
+      //     //   ) with 0
+      //     // ) (v[1][1] - v[0][1] - 1)
+      //   else 0
+      //     // (natfold (
+      //     //     \x_:I. \acc:I.
+      //     //     let x = v[0][0] + x_ in
+      //     //     let y = v[0][1] in
+      //     //     acc + (if btree_set_II_find (x,y) pillSet then 1 else 0)
+      //     //   ) with 0
+      //     // ) (v[1][0] - v[0][0] - 1)
     ) vertexSet in
   let nearestPillMap = qt32_I_empty
-  (fold
-    (\p:node. \acc:qt32_I.
-      let nu = getWay dirUp wSize world p in
-      let nd = getWay dirDown wSize world p in
-      let nl = getWay dirLeft wSize world p in
-      let nr = getWay dirRight wSize world p in
-      qt32_I_insert acc p[0] p[1] 1024
-    ) with qt32_I_empty) nodeList
+  // (fold
+  //   (\p:node. \acc:qt32_I.
+  //     let nu = getWay dirUp wSize world p in
+  //     let nd = getWay dirDown wSize world p in
+  //     let nl = getWay dirLeft wSize world p in
+  //     let nr = getWay dirRight wSize world p in
+  //     qt32_I_insert acc p[0] p[1] 1024
+  //   ) with qt32_I_empty) nodeList
   in
   (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap, nearestPillMap)
   in
