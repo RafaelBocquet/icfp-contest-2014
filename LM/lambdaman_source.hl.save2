@@ -144,9 +144,9 @@ let isPassage = \u:userState. \p:(I, I).
 
 // Shortest path in graph
 
-let shortestPathMaxDepth = 16 in
+let shortestPathMaxDepth = 5 in
 
-let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V.
+let shortestPathImplementation = \maxDepth:I. \u.userState. \heap:heap_min_V.
   let hp =
       while 
         (\acc:(qt32_I, heap_min_V, qt32_I).
@@ -161,7 +161,7 @@ let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap
                   (hc[0][1] == maxDepth)
                 then (heap_min_V_delete h, acc[2]) // Already explored 
                 else
-                  ( let hcNeigh = qt32_LN_at neighMap hc[1][0] hc[1][1] in
+                  ( let hcNeigh = qt32_LN_at (gNodeNeighMap g) hc[1][0] hc[1][1] in
                       (fold (
                           \neigh:node.
                           if not (qt32_I_at explored neigh[0] neigh[1])
@@ -191,7 +191,44 @@ let shortestPath = \maxDepth:I. \u:userState. \p:(I,I).
   let g = uGraph u in
   (destruct
     ( \_:I. trace (0-1) in qt32_I_empty
-    , \node:node. shortestPathImplementation maxDepth (gNodeNeighMap g) (heap_min_V_singleton ((0, 0), node))
+    , \node:node.
+        let hp = while 
+            (\acc:(qt32_I, heap_min_V, qt32_I).
+              let explored = acc[0] in
+              let h = acc[1] in
+              (destruct
+                ( \_:I. trace (0-1) in acc // Impossible
+                , \hc:((I,I),node).
+                  let x =
+                    if or
+                      (qt32_I_at explored hc[1][0] hc[1][1])
+                      (hc[0][1] == maxDepth)
+                    then (heap_min_V_delete h, acc[2]) // Already explored 
+                    else
+                      ( let hcNeigh = qt32_LN_at (gNodeNeighMap g) hc[1][0] hc[1][1] in
+                          (fold (
+                              \neigh:node.
+                              if not (qt32_I_at explored neigh[0] neigh[1])
+                                then heap_min_V_insert ((hc[0][0] + distance hc[1] neigh, hc[0][1] + 1), neigh)
+                                else \x:heap_min_V.x
+                            ) with (heap_min_V_delete h)
+                          ) hcNeigh
+                      , qt32_I_insert acc[2] hc[1][0] hc[1][1] hc[0][0]
+                      )
+                  in
+                  (qt32_I_insert explored hc[1][0] hc[1][1] 1, x[0], x[1])
+                )
+              ) (heap_min_V_min h)
+            )
+          until
+            (\acc:(qt32_I, heap_min_V, qt32_I).
+              let explored = acc[0] in
+              let h = acc[1] in
+              not (heap_min_V_isempty h)
+            )
+          with
+            (qt32_I_empty, heap_min_V_singleton ((0, 0), node), qt32_I_empty)
+        in hp[2]
     , \_:vertex. trace (0-1) in qt32_I_empty
     )
   ) (qt32_NOV_at (gNOV g) p[0] p[1])
@@ -210,6 +247,7 @@ let isNode = \wSize:(I, I). \world:qt32_I. \p:(I, I).
     then 0
     else 1
   in
+
 
 letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
   let dp = applyDir d p in
@@ -277,7 +315,7 @@ let pickMove = \u:userState.
               with 0
             ) targetNodes in trace (dir, _osef_) in _osef_
           , nPill
-          , qt32_I_at (gNearestPillMap g) n[0] n[1]
+          , 0
           )
         , dir
         )
@@ -366,7 +404,7 @@ let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if or (qt32_I_at world x y == mapPill) (qt32_I_at world x y == mapPowerPill)
+            if qt32_I_at world x y == mapPill
               then cons (x, y) with acc
               else acc
           )
@@ -471,28 +509,6 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
       qt32_LN_insert acc p[0] p[1] l___
     ) with qt32_LN_empty) nodeList
     in
-  let nodeNeighMap_ = (fold (
-      \v:vertex. \acc:nodeNeighMap.
-        let l = cons v[0] with cons v[1] with empty node in
-        if v[0][0] == v[1][0] // Vertical
-        then
-          (natfold (
-              \y_:I. \acc_:nodeNeighMap.
-              let x = v[0][0] in
-              let y = v[0][1] + y_ in
-              qt32_LN_insert acc_ x y l
-            ) with acc
-          ) (v[1][1] - v[0][1] - 1)
-        else
-          (natfold (
-              \x_:I. \acc_:nodeNeighMap.
-              let x = v[0][0] + x_ in
-              let y = v[0][1] in
-              qt32_LN_insert acc_ x y l
-            ) with acc
-          ) (v[1][0] - v[0][0] - 1)
-    ) with nodeNeighMap) vertexList
-    in 
   let nodePillMap = (fold
     (\p:node. \acc:qt32_I.
       qt32_I_insert acc p[0] p[1] (if btree_set_II_find p pillSet then 1 else 0)
@@ -519,37 +535,35 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
           ) (v[1][0] - v[0][0] - 1)
     ) vertexSet in
   let nearestPillMapHeap = (fold
-    (\p:node. \acc:heap_min_V.
+    (\p:node. \acc:heap_min_IN.
       if btree_set_II_find p pillSet
-        then heap_min_V_insert ((0,0),p) acc
+        then heap_min_IN_insert (0,p) acc
         else
-          let neigh = qt32_LN_at nodeNeighMap_ p[0] p[1] in
+          let neigh = qt32_LN_at nodeNeighMap p[0] p[1] in
           ( fold (
               \n:node.
-              \acc_:heap_min_V.
+              \acc_:heap_min_IN.
               let v = normaliseVertex (n, p) in
               (destruct
                 ( \_:I. acc_
                 , \x:I.
                     if x
-                      then heap_min_V_insert ((0,0),p) acc_
+                      then heap_min_IN_insert (0,p) acc_
                       else acc_
                 )
               ) (btree_map_V_find v vertexPillMap)
             ) with acc
           ) neigh
-    ) with heap_min_V_empty) nodeList
+    ) with heap_min_IN_empty) nodeList
   in
-  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap_, nodePillMap, vertexPillMap, shortestPathImplementation 512 nodeNeighMap_ nearestPillMapHeap)
+  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap, qt32_I_empty)
   in
-
-let updateNearestPill = \p:node. \pm:nearestPillMap. pm in
 
 let updateGraphPill = \g:graph. \p:node. 
   (destruct
     ( \_:I. g
-    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, qt32_I_update (gNodePillMap g) n[0] n[1] (\A:I. A - 1), gVertexPillMap g, updateNearestPill p (gNearestPillMap g))
-    , \v:vertex. (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, gNodePillMap g, btree_map_V_update v (\A:I. A - 1) (gVertexPillMap g), updateNearestPill p (gNearestPillMap g))
+    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, qt32_I_update (gNodePillMap g) n[0] n[1] (\A:I. A - 1), gVertexPillMap g, gNearestPillMap g)
+    , \v:vertex. (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, gNodePillMap g, btree_map_V_update v (\A:I. A - 1) (gVertexPillMap g), gNearestPillMap g)
     )
   ) (qt32_NOV_at (gNOV g) p[0] p[1])
   in
@@ -607,12 +621,12 @@ let step =
         then
           ( uWorldSize u_
           , uWorldMap u_
-          , updateGraphPill (uGraph u_) (uLambdaStatus u_)[1]
+          , uGraph u_
           , uLambdaStatus u_
           , uGhostStatus u_
           , uFruitStatus u_
           , uUTC u_ + 10
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_)
+          , uPillSet u_
           , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
           , uFruitPosition u_
         )
