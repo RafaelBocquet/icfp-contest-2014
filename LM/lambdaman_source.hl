@@ -225,36 +225,37 @@ letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction
 let pickMove = \u:userState.
   let g = uGraph u in
   let lm = uLambdaStatus u in
+  let p = lm[1] in
   let curDir = lm[2] in
+    let nodeNeigh = qt32_LN_at (gNodeNeighMap g) p[0] p[1] in
+    let targetNode = \gh:ghostStatus.
+      getWay (ghostDirection gh) (uWorldSize u) (uWorldMap u) (ghostPosition gh)
+      in
+    letrec targetNodes_ : I -> [ghostStatus] -> [(I,I,node,ghostStatus)] = \gi:I. \gh:[ghostStatus].
+      if isempty gh
+        then empty (I,I,node,ghostStatus)
+        else
+          let tn = targetNode (head gh) in
+          cons (gi - (gi / 4), distance tn (ghostPosition (head gh)), tn, head gh) with (targetNodes_ (gi + 1) (tail gh))
+      in
+    let targetNodes = targetNodes_ 0 (uGhostStatus u) in
+    type moveScore = (I,I,I) in
+    let nodeDirection = \n:node.
+      if n[0] == p[0]
+        then
+          if n[1] < p[1] then dirUp else dirDown
+        else
+          if n[0] < p[0] then dirLeft else dirRight
+      in
   (destruct
     ( \_:I. trace (0-1) in dirDown
-    , \p:node.
-      let nodeNeigh = qt32_LN_at (gNodeNeighMap g) p[0] p[1] in
-      let targetNode = \gh:ghostStatus.
-        getWay (ghostDirection gh) (uWorldSize u) (uWorldMap u) (ghostPosition gh)
-        in
-      letrec targetNodes_ : I -> [ghostStatus] -> [(I,I,node,ghostStatus)] = \gi:I. \gh:[ghostStatus].
-        if isempty gh
-          then empty (I,I,node,ghostStatus)
-          else
-            let tn = targetNode (head gh) in
-            cons (gi - (gi / 4), distance tn (ghostPosition (head gh)), tn, head gh) with (targetNodes_ (gi + 1) (tail gh))
-        in
-      let targetNodes = targetNodes_ 0 (uGhostStatus u) in
-      type moveScore = (I,I,I) in
-      let nodeDirection = \n:node.
-        if n[0] == p[0]
-          then
-            if n[1] < p[1] then dirUp else dirDown
-          else
-            if n[0] < p[0] then dirLeft else dirRight
-        in
+    , \p_:node.
       let moveData = \n:node. 
         let dir = nodeDirection n in
         let v = normaliseVertex (p, n) in
         let sPath = shortestPath shortestPathMaxDepth u n in
-        let nPill = (qt32_I_at (gNodePillMap g) n[0] n[1]) + (destruct (\_:I. trace (0-1) in 0, \x:I. x)) (btree_map_V_find v (gVertexPillMap g)) in
-        ( ( let _osef_ = (fold (
+        let nPill = (qt32_I_at (gNodePillMap g) n[0] n[1]) + (destruct (\_:I. trace (0-1234, v) in 0, \x:I. x)) (btree_map_V_find v (gVertexPillMap g)) in
+        ( ( (fold (
                 \tNode:(I,I,node,ghostStatus). \acc:I.
                 let gPosition = ghostPosition tNode[3] in
                 if ( destruct
@@ -265,17 +266,17 @@ let pickMove = \u:userState.
                 ) (qt32_NOV_at (gNOV g) gPosition[0] gPosition[1])
                   then acc + 1 // If on path, acc + 1
                   else
-                    let ghDist = qt32_I_at sPath n[0] n[1] in
-                    if ghDist
+                    let ghDist = qt32_I_at sPath tNode[2][0] tNode[2][1] in
+                    if or ghDist (node_eq n tNode[2])
                       then
                         let ghDist_ = ghDist + tNode[1] in
-                        if (ghDist_ * (ghostSpeed tNode[0]) <= lmSpeed * (qt32_I_at sPath p[0] p[1])) + lmPillSpeed * nPill
+                        if ghDist_ * ghostSpeed tNode[0] <= lmSpeed * qt32_I_at sPath p[0] p[1] + lmPillSpeed * nPill + 128
                           then acc + 1
                           else acc
                       else acc // If more than maxDepth nodes, acc
               )
               with 0
-            ) targetNodes in trace (dir, _osef_) in _osef_
+            ) targetNodes
           , nPill
           , qt32_I_at (gNearestPillMap g) n[0] n[1]
           )
@@ -523,7 +524,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
       if btree_set_II_find p pillSet
         then heap_min_V_insert ((0,0),p) acc
         else
-          let neigh = qt32_LN_at nodeNeighMap_ p[0] p[1] in
+          let neigh = qt32_LN_at nodeNeighMap p[0] p[1] in
           ( fold (
               \n:node.
               \acc_:heap_min_V.
@@ -540,7 +541,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
           ) neigh
     ) with heap_min_V_empty) nodeList
   in
-  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap_, nodePillMap, vertexPillMap, shortestPathImplementation 512 nodeNeighMap_ nearestPillMapHeap)
+  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap, shortestPathImplementation 512 nodeNeighMap nearestPillMapHeap)
   in
 
 let updateNearestPill = \p:node. \pm:nearestPillMap. pm in
@@ -634,6 +635,7 @@ let step =
         )
       else u_
     in
+    trace (uUTC u__) in
     (u__, pickMove u__)
   in
 
