@@ -5,7 +5,6 @@ def make_btree_set(name, ty_key, eq, lte):
 """
 let __internal_btree_set_{0}_eq = {2} in
 let __internal_btree_set_{0}_lte = {3} in
-type __internal_btree_set_{0}_maybe = <I, {1}> in
 
 let __internal_btree_set_{0}_partition_list =
   fold
@@ -109,11 +108,72 @@ letrec btree_set_{0}_delete : {1} -> btree_set_{0} -> btree_set_{0} = \\x:{1}.
 
 """.format(name, ty_key, eq, lte))
 
-make_btree_set("I", "I", "\\x:I. \\y:I. x == y", "\\x:I. \\y:I. x <= y")
-make_btree_set("II", "(I, I)"
+def make_btree_map(name, ty_key, eq, lte, ty_val):
+  make_btree_set(name, ty_key, eq, lte)
+  print(
+"""
+let __internal_btree_map_{0}_eq = {2} in
+let __internal_btree_map_{0}_lte = {3} in
+type btree_map_{0}_maybe = <I, {4}> in
+
+type btree_map_{0} = <I, (?, {1}, {4}, ?)> in
+let btree_map_{0}_empty = make btree_map_{0} 0 0 in
+let btree_map_{0}_node = \\l:btree_map_{0}. \\x:{1}. \\v:{4}. \\r:btree_map_{0}. make btree_map_{0} 1 (l, x, v, r) in
+
+letrec btree_map_{0}_find : {1} -> btree_map_{0} -> btree_map_{0}_maybe = \\x:{1}.
+  destruct
+    ( \\_:I. make btree_map_{0}_maybe 0 0
+    , \\t:(btree_map_{0}, {1}, {4}, btree_map_{0}).
+        if __internal_btree_map_{0}_eq x t[1]
+          then make btree_map_{0}_maybe 1 t[2]
+        else if __internal_btree_map_{0}_lte x t[1]
+          then btree_map_{0}_find x t[0]
+          else btree_map_{0}_find x t[3]
+    )
+  in
+
+letrec btree_map_{0}_update : {1} -> ({4} -> {4}) -> btree_map_{0} -> btree_map_{0} = \\x:{1}. \\f:({4} -> {4}).
+  destruct
+    ( \\_:I. btree_map_{0}_empty
+    , \\t:(btree_map_{0}, {1}, {4}, btree_map_{0}).
+        if __internal_btree_map_{0}_eq x t[1]
+          then btree_map_{0}_node t[0] t[1] (f t[2]) t[3]
+        else if __internal_btree_map_{0}_lte x t[1]
+          then btree_map_{0}_update x f t[0]
+          else btree_map_{0}_update x f t[3]
+    )
+  in
+
+letrec btree_map_{0}_from_set : {4} -> btree_set_{0} -> btree_map_{0} = \\x:{4}.
+  destruct
+    ( \\_:I. btree_map_{0}_empty
+    , \\t:(btree_set_{0}, {1}, btree_set_{0}).
+        btree_map_{0}_node (btree_map_{0}_from_set x t[0]) t[1] x (btree_map_{0}_from_set x t[2])
+    )
+  in
+
+letrec btree_map_{0}_from_set_generate : ({1} -> {4}) -> btree_set_{0} -> btree_map_{0} = \\f:({1}->{4}).
+  destruct
+    ( \\_:I. btree_map_{0}_empty
+    , \\t:(btree_set_{0}, {1}, btree_set_{0}).
+        btree_map_{0}_node (btree_map_{0}_from_set_generate f t[0]) t[1] (f t[1]) (btree_map_{0}_from_set_generate f t[2])
+    )
+  in
+
+""".format(name, ty_key, eq, lte, ty_val))
+
+make_btree_map("I", "I", "\\x:I. \\y:I. x == y", "\\x:I. \\y:I. x <= y", "I")
+make_btree_map("II", "(I, I)"
   , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0"
-  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]")
-make_btree_set("V", "((I,I),(I,I))"
+  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]"
+  , "I")
+make_btree_map("IIL", "(I, I)"
+  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0"
+  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]"
+  , "[(I, I)]")
+make_btree_map(
+"V"
+, "((I,I),(I,I))"
 , """
 let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
 \\x:((I,I),(I,I)). \\y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmpeq x[1] y[1] else 0
@@ -122,4 +182,5 @@ let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 i
 let __cmplte = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
 let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
 \\x:((I,I),(I,I)). \\y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmplte x[1] y[1] else __cmplte x[0] y[0]
-""")
+"""
+, "I")

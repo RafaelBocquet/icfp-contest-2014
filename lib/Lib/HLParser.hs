@@ -50,6 +50,8 @@ hlLanguageDef = emptyDef
       , "trace"
       , "letrec"
       , "empty"
+      , "while"
+      , "until"
       , "isempty"
       ]
   , reservedOpNames =
@@ -264,6 +266,14 @@ parseExpression = choice
       lexParser $ reParser "with"
       x <- parseExpression
       return $ ENatFold 0 TOther f x
+  , lexParser $ do
+      lexParser $ reParser "while"
+      f <- parseExpression
+      lexParser $ reParser "until"
+      u <- parseExpression
+      lexParser $ reParser "with"
+      x <- parseExpression
+      return $ EWhile 0 TOther f u x
   , lexParser $ do
       lexParser $ reParser "cons"
       f <- parseExpression

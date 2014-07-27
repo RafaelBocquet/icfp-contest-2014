@@ -72,15 +72,26 @@ type node = (I, I) in
 let node_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
 let node_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
 type nodeSet = btree_set_II in
+type nodeNeighMap = btree_map_IIL in
+type nodeMap = btree_map_II in
 type vertex = (node, node) in
 type vertexSet = btree_set_V in
-// let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then  in
-type NOV = <I, node, vertex> in
-type graph = (nodeSet, vertexSet, qt32_NOV) in
+type vertexMap = btree_map_V in
 
-let gNodeSet       = \g:graph. g[0] in
-let gVertexSet     = \g:graph. g[1] in
-let gNOV           = \g:graph. g[2] in
+let vertexDirection = \v:vertex. if v[0][0] == v[1][0] then dirDown else dirRight in
+let vertexOKDirection = \v:vertex. \d:direction. if v[0][0] == v[1][0] then or (d == dirUp) (d == dirDown) else or (d == dirRight) (d == dirLeft) in
+let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then v else (v[1], v[0]) in
+
+type NOV = <I, node, vertex> in
+
+type graph = (nodeSet, vertexSet, qt32_NOV, nodeNeighMap, nodeMap, vertexMap) in
+
+let gNodeSet            = \g:graph. g[0] in
+let gVertexSet          = \g:graph. g[1] in
+let gNOV                = \g:graph. g[2] in
+let gNodeNeighMap       = \g:graph. g[3] in
+let gNodePillMap        = \g:graph. g[4] in
+let gVertexPillMap      = \g:graph. g[5] in
 
 type userState = ((I,I),qt32_I,graph,lambdaManStatus,[ghostStatus],fruitStatus,I,btree_set_II,btree_set_II,(I,I)) in
 
@@ -111,69 +122,92 @@ let isPassage = \u:userState. \p:(I, I).
     else 0
   in
 
-let isCorrectMove = \u:userState. \d:direction.
-  isPassage u (applyDir d (uLambdaStatus u)[1])
-  in
-
-let distanceNearestGhost =
-  \u:userState.
-  \p:(I, I). (
-    fold (\g:ghostStatus. \d:I. min d (distance g[1] p)) with 512
-  ) (uGhostStatus u) in
-let distanceNearestPill =
-  \u:userState.
-  \p:(I, I). 0
-  in
-
-let scoreMove = \u:userState. \d:direction.
-  let next = applyDir d (uLambdaStatus u)[1] in
-  if isCorrectMove u d
-    then
-     let dPill = distanceNearestPill u next in
-     let dGhost = distanceNearestGhost u next in
-     3*dGhost - 5*dPill
-    else 0-10000000
-in
-
-let pickMove = \u:userState.
-  let upScore = scoreMove u dirUp in
-  let downScore = scoreMove u dirDown in
-  let rightScore = scoreMove u dirRight in
-  let leftScore = scoreMove u dirLeft in
-  if upScore >= downScore
-    then
-      if upScore >= rightScore
-        then
-          if upScore >= leftScore
-            then dirUp
-            else dirLeft
-        else
-          if rightScore >= leftScore
-            then dirRight
-            else dirLeft
-    else
-      if downScore >= rightScore
-        then
-          if downScore >= leftScore
-            then dirDown
-            else dirLeft
-        else
-          if rightScore >= leftScore
-            then dirRight
-            else dirLeft
-  in
-
 // Shortest path in graph
 
-// let shortestPathLambdaMan = \u:userState. \p:(I,I).
+let shortestPath = \u:userState. \p:(I,I).
+  let g = uGraph u in
+  (destruct
+    ( \_:I. 0
+    , \node:node.
+        let hp = while 
+            (\acc:(qt32_I, heap_min_IN, qt32_I).
+              let explored = acc[0] in
+              let h = acc[1] in
+              (destruct
+                ( \_:I. trace (0-1) in acc // Impossible
+                , \hc:(I,node).
+                  trace hc[1] in
+                  let x =
+                    if qt32_I_at explored hc[1][0] hc[1][1]
+                    then (heap_min_IN_delete h, acc[2]) // Already explored 
+                    else
+                      ( (destruct
+                          ( \_:I. trace (0-1) in heap_min_IN_delete h // Impossible
+                          , \hcNeigh:[node].
+                              (fold (
+                                  \neigh:node.
+                                  heap_min_IN_insert (hc[0] + distance hc[1] neigh, neigh)
+                                ) with (heap_min_IN_delete h)
+                              ) hcNeigh
+                          )
+                        ) (btree_map_IIL_find hc[1] (gNodeNeighMap g))
+                      , qt32_I_insert acc[2] hc[1][0] hc[1][1] hc[0]
+                      )
+                  in
+                  (qt32_I_insert explored hc[1][0] hc[1][1] 1, x[0], x[1])
+                )
+              ) (heap_min_IN_min h)
+            )
+          until
+            (\acc:(qt32_I, heap_min_IN, qt32_I).
+              let explored = acc[0] in
+              let h = acc[1] in
+              not (heap_min_IN_isempty h)
+            )
+          with
+            (qt32_I_empty, heap_min_IN_singleton (0, node), qt32_I_empty)
+        in trace hp[0] in 0
+    , \_:vertex. 0
+    )
+  ) (qt32_NOV_at (gNOV g) p[0] p[1])
+  in
+
+// Move picking
+
+let pickMove = \u:userState.
+  let g = uGraph u in
+  let lm = uLambdaStatus u in
+  let curDir = lm[2] in
+  (destruct
+    ( \_:I. dirDown
+    , \p:node. let _ = shortestPath u lm[1] in dirDown
+    , \v:vertex. if vertexOKDirection v curDir then curDir else vertexDirection v
+    )
+  ) (qt32_NOV_at (gNOV g) lm[1][0] lm[1][1])
+  in
 
 
 // Map graph
 
+let isNode = \wSize:(I, I). \world:qt32_I. \p:(I, I).
+  let x = p[0] in
+  let y = p[1] in
+  if not (isPassageQt wSize world (x, y))
+    then 0
+  else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
+    then 0
+  else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
+    then 0
+    else 1
+  in
+
+
 letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
   let dp = applyDir d p in
   if isPassageQt wSize world dp
-    then getWay d wSize world dp
+    then if isNode wSize world dp
+      then dp
+      else getWay d wSize world dp
     else p
   in
 
@@ -292,9 +326,8 @@ let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
   head fruitList
 in
 
-let graphFromWorld = \wSize:(I,I). \world:qt32_I.
-  let nodeList =
-    ( natfold
+let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
+  let nodeList = ( natfold
       ( \x_:I.
         \acc_:[node].
         let x = wSize[0]-x_ in
@@ -302,13 +335,9 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if not (isPassageQt wSize world (x, y))
-              then acc
-            else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
-              then acc
-            else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
-              then acc
-            else cons (x, y) with acc
+            if isNode wSize world (x, y)
+              then cons (x, y) with acc
+              else acc
           )
           with acc_
         ) wSize[1]
@@ -322,15 +351,41 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I.
         let upp = getWay dirUp wSize world p in
         let leftp = getWay dirLeft wSize world p in
         let acc_ = if node_eq upp p then acc else cons (upp, p) with acc in
-        let acc__ = if node_eq leftp p then acc else cons (leftp, p) with acc_ in
+        let acc__ = if node_eq leftp p then acc_ else cons (leftp, p) with acc_ in
         acc__
       ) with (empty vertex)
     ) nodeList
     in
+  trace nodeList in
+  trace vertexList in
   let vertexSet = btree_set_V_from_list vertexList in
-  (nodeSet, vertexSet, qtGraphFromWorld wSize world)
+  let nodeNeighMap = btree_map_IIL_from_set_generate
+    (\p:node.
+      let nu = getWay dirUp wSize world p in
+      let nd = getWay dirDown wSize world p in
+      let nl = getWay dirLeft wSize world p in
+      let nr = getWay dirRight wSize world p in
+      let l =  if node_eq nu p then empty node else cons nu with empty node in
+      let l_ =  if node_eq nd p then l else cons nd with l in
+      let l__ =  if node_eq nl p then l_ else cons nl with l_ in
+      let l___ =  if node_eq nr p then l__ else cons nr with l__ in
+      l___
+    ) nodeSet
+    in
+  let nodePillMap = btree_map_II_from_set_generate (\p:node. if btree_set_II_find p pillSet then 1 else 0) nodeSet in
+  let vertexPillMap = btree_map_V_from_set_generate
+    (\v:vertex. 0) vertexSet in
+  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap)
   in
 
+let updateGraphPill = \g:graph. \p:node. 
+  (destruct
+    ( \_:I. g
+    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, btree_map_II_update n (\A:I. A - 1) (gNodePillMap g), gVertexPillMap g)
+    , \v:vertex. (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, gNodePillMap g, btree_map_V_update v (\A:I. A - 1) (gVertexPillMap g))
+    )
+  ) (qt32_NOV_at (gNOV g) p[0] p[1])
+  in
 
 // ...
 
@@ -338,7 +393,9 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I.
 let makeUserState = \world:worldState.
   let ws = worldSize world       in
   let qt = qtFromWorld world[0] in
-  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3], 1, makeNormalPillSet ws qt, makePowerPillSet ws qt, makeFruitPosition ws qt)
+  let pillSet = makeNormalPillSet ws qt in
+  let powerPillSet = makePowerPillSet ws qt in
+  (ws, qt, graphFromWorld ws qt pillSet, world[1], world[2], world[3], 1, pillSet, powerPillSet, makeFruitPosition ws qt)
   in
 
 type stepType = userState -> worldState -> (userState, direction) in
@@ -370,7 +427,7 @@ let step =
         then
           ( uWorldSize u_
           , uWorldMap u_
-          , uGraph u_
+          , updateGraphPill (uGraph u_) (uLambdaStatus u_)[1]
           , uLambdaStatus u_
           , uGhostStatus u_
           , uFruitStatus u_

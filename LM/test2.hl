@@ -1,18 +1,1 @@
-let h = heap_min_I_insert 2
-  (heap_min_I_insert 8
-  (heap_min_I_insert 0
-  (heap_min_I_insert 95
-  (heap_min_I_empty)))) in
-
-trace (heap_min_I_min h) in
-
-let h_ = heap_min_I_delete h in
-trace (heap_min_I_min h_) in
-
-let h__ = heap_min_I_delete h_ in
-trace (heap_min_I_min h__) in
-
-let h___ = heap_min_I_delete h__ in
-trace (heap_min_I_min h___) in
-
-0
+while (\x:I.x-1) until (\x:I.x == 10) with 10

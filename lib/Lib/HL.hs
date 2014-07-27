@@ -96,6 +96,7 @@ data Expr =
   | EListIsEmpty TypeHash Type Expr
   | EListHead TypeHash Type Expr
   | EListTail TypeHash Type Expr
+  | EWhile TypeHash Type Expr Expr Expr
   | ENatFold TypeHash Type Expr Expr
   | EVariantConstruct TypeHash Type Type Int Expr
   | EVariantDestruct TypeHash Type [Expr]
@@ -129,6 +130,7 @@ instance Show Expr where
   show (EListIsEmpty _ _ e) = "isempty " ++ "(" ++ show e ++ ")"
   show (EListHead _ _ t) = "head " ++ "(" ++ show t ++ ")"
   show (EListTail _ _ t) = "tail " ++ "(" ++ show t ++ ")"
+  show (EWhile _ _ f u x) = "while " ++ "(" ++ show f ++ ")" ++ " until " ++ "(" ++ show x ++ ")" ++ " with " ++ "(" ++ show x ++ ")"
   show (ENatFold _ _ f x) = "natfold " ++ "(" ++ show f ++ ")" ++ " with " ++ "(" ++ show x ++ ")"
   show (EVariantConstruct _ _ t i e) = "make " ++ "(" ++ show t ++ ")" ++ " " ++ show i ++ " " ++ "(" ++ show e ++ ")"
   show (EVariantDestruct _ _ (f:fs)) = "destruct " ++ "(" ++ show f ++ (concat $ ((", " ++) . show) <$> fs)  ++ ")"
@@ -162,6 +164,7 @@ exprType (EListEmpty _ ty _) = ty
 exprType (EListIsEmpty _ ty _) = ty
 exprType (EListHead _ ty _) = ty
 exprType (EListTail _ ty _) = ty
+exprType (EWhile _ ty _ _ _) = ty
 exprType (ENatFold _ ty _ _) = ty
 exprType (EVariantConstruct _ ty _ _ _) = ty
 exprType (EVariantDestruct _ ty _) = ty
@@ -195,6 +198,7 @@ exprTypeHash (EListEmpty ty _ _) = ty
 exprTypeHash (EListIsEmpty ty _ _) = ty
 exprTypeHash (EListHead ty _ _) = ty
 exprTypeHash (EListTail ty _ _) = ty
+exprTypeHash (EWhile ty _ _ _ _) = ty
 exprTypeHash (ENatFold ty _ _ _) = ty
 exprTypeHash (EVariantConstruct ty _ _ _ _) = ty
 exprTypeHash (EVariantDestruct ty _ _) = ty
@@ -228,6 +232,7 @@ withType fty (EListEmpty _ ty t) = let nty = (fty ty) in EListEmpty (hash nty) n
 withType fty (EListIsEmpty _ ty t) = let nty = (fty ty) in EListIsEmpty (hash nty) nty t
 withType fty (EListHead _ ty l) = let nty = (fty ty) in EListHead (hash nty) nty l
 withType fty (EListTail _ ty l) = let nty = (fty ty) in EListTail (hash nty) nty l
+withType fty (EWhile _ ty f u x) = let nty = (fty ty) in EWhile (hash nty) nty f u x
 withType fty (ENatFold _ ty f x) = let nty = (fty ty) in ENatFold (hash nty) nty f x
 withType fty (EVariantConstruct _ ty a b c) = let nty = (fty ty) in EVariantConstruct (hash nty) nty a b c
 withType fty (EVariantDestruct _ ty l) = let nty = (fty ty) in EVariantDestruct (hash nty) nty l
@@ -443,8 +448,18 @@ typecheck (me, mt) e = do
       x' <- typecheck (me, mt) x
       case exprType f' of
         TFunc TInt (TFunc sigma sigma') -> 
-          if hash sigma == hash sigma' && hash sigma == exprTypeHash x'
+          if sigma == sigma' && hash sigma == exprTypeHash x'
             then return $ ENatFold 0 (TFunc TInt sigma) f' x'
+            else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
+        _ -> throwError $ NonFunctionApplication expr
+    typecheck' (me, mt) expr@(EWhile _ _ f u x) = do
+      f' <- typecheck (me, mt) f
+      u' <- typecheck (me, mt) u
+      x' <- typecheck (me, mt) x
+      case (exprType f', exprType u', exprType x') of
+        (TFunc sigma' sigma'', TFunc sigma TInt, sigma''') -> 
+          if sigma == sigma' && sigma == sigma'' && sigma == sigma'''
+            then return $ EWhile 0 sigma f' u' x'
             else traceShow (sigma, sigma', exprType x') $ throwError $ FunctionTypeMismatch expr
         _ -> throwError $ NonFunctionApplication expr
     typecheck' (me, mt) expr@(EVariantConstruct _ _ ty i e) = do
@@ -745,7 +760,7 @@ compile (EListTail _ _ l)           = do
 compile (ENatFold _ _ f x)         = do
   id <- get
   increaseState
-  let blockName = "fold." ++ show id
+  let blockName = "natfold." ++ show id
   bbegin <- blockBegin blockName
   bend <- blockEnd blockName
   
@@ -808,6 +823,63 @@ compile (ENatFold _ _ f x)         = do
       , RTN
       ]
   tell [LDF (VLabel lambda2Begin)]
+compile (EWhile _ _ f u x)         = do
+  id <- get
+  increaseState
+  let blockName = "while." ++ show id
+  bbegin <- blockBegin blockName
+  bend <- blockEnd blockName
+  
+  id' <- get
+  increaseState
+  let lambdaBlock = "lambda." ++ show id'
+  lambdaBegin <- blockBegin lambdaBlock
+  lambdaEnd <- blockEnd lambdaBlock
+  
+  id' <- get
+  increaseState
+  let lambda2Block = "lambda2." ++ show id'
+  lambda2Begin <- blockBegin lambda2Block
+  lambda2End <- blockEnd lambda2Block
+
+  tell [LDC $ VInt 0, TSEL (VLabel lambda2End) (VLabel lambda2End)]
+  block blockName $ bindVariable "?" $ bindVariable "?" $ bindVariable "?" $ do
+    thenbegin <- blockBegin "then"
+    elsebegin <- blockBegin "else"
+    tell [LD (VInt 0) (VInt 0)]
+    compile u
+    tell [AP (VInt 1)]
+    tell [TSEL (VLabel thenbegin) (VLabel elsebegin)]
+    block "then" $ do
+      tell
+        [ LD (VInt 0) (VInt 0)
+        ]
+      compile f
+      tell
+        [ AP (VInt 1)
+        , LD (VInt 1) (VInt 0)
+        , TAP (VInt 1)
+        ]
+    block "else" $ tell
+      [ LD (VInt 0) (VInt 0)
+      , RTN
+      ]
+  block lambdaBlock $ bindVariable "?" $ bindVariable "?" $ do
+    compile x
+    tell
+      [ LD (VInt 0) (VInt 0)
+      , AP (VInt 1)
+      , RTN
+      ]
+  block lambda2Block $ bindVariable "?" $ do
+    tell
+      [ DUM (VInt 1)
+      , LDF (VLabel bbegin)
+      , LDF (VLabel lambdaBegin)
+      , RAP (VInt 1)
+      , RTN
+      ]
+  tell [LDF (VLabel lambda2Begin), AP (VInt 0)]
 compile (EVariantConstruct _ _ ty i e) = do
   tell [LDC (VInt i)]
   compile e

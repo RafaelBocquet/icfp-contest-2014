@@ -130,12 +130,30 @@ let heap_min_{0}_delete =
     )
   in
 
+let heap_min_{0}_isempty = 
+  destruct
+    ( \\_:I. 1
+    , \\h:(I, heap_min_{0}, {1}, heap_min_{0}). 0
+    )
+  in
+
 """.format(name, ty, eq, lte))
 
 make_heap("I", "I", "\\x:I. \\y:I. x == y", "\\x:I. \\y:I. x <= y")
 make_heap("II", "(I, I)"
   , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0"
   , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]")
+make_heap("IN", "(I,(I,I))"
+, """
+let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\\x:(I,(I,I)). \\y:(I,(I,I)). if x[0] == y[0] then __cmpeq x[1] y[1] else 0
+"""
+, """
+let __cmplte = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\\x:(I,(I,I)). \\y:(I,(I,I)). if x[0] == y[0] then __cmplte x[1] y[1] else x[0] <= y[0]
+""")
+
 make_heap("V", "((I,I),(I,I))"
 , """
 let __cmpeq = \\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
