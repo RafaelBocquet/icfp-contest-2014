@@ -59,11 +59,51 @@ let btree_set_{0}_from_list = \\li:[{1}].
   __internal_btree_set_{0}_from_list 1 len sorted
   in
 
-let btree_set_{0}_find /*: {1} -> btree_set_{0} -> I*/ = \\x:{1}.
+letrec __internal_btree_set_{0}_merge : I -> btree_set_{0} -> btree_set_{0} -> btree_set_{0} = \\b:I.
+  destruct
+    ( \\_:I. \\r:btree_set_{0}. r
+    , \\l:(btree_set_{0}, {1}, btree_set_{0}).
+        destruct
+          ( \\_:I. (make btree_set_{0} 1 l)
+          , \\r:(btree_set_{0}, {1}, btree_set_{0}).
+              if b
+                then
+                  make btree_set_{0} 1
+                    ( __internal_btree_set_{0}_merge (not b) (make btree_set_{0} 1 l) r[0]
+                    , r[1]
+                    , r[2]
+                    )
+                else
+                  make btree_set_{0} 1
+                    ( l[0]
+                    , l[1]
+                    , __internal_btree_set_{0}_merge (not b) l[2] (make btree_set_{0} 1 r)
+                    )
+          )
+    )
+  in
+
+letrec btree_set_{0}_find : {1} -> btree_set_{0} -> I = \\x:{1}.
   destruct
     ( \\_:I. 0
     , \\t:(btree_set_{0}, {1}, btree_set_{0}).
-      0
+        if __internal_btree_set_{0}_eq x t[1]
+          then 1
+        else if __internal_btree_set_{0}_lte x t[1]
+          then btree_set_{0}_find x t[0]
+          else btree_set_{0}_find x t[2]
+    )
+  in
+
+letrec btree_set_{0}_delete : {1} -> btree_set_{0} -> btree_set_{0} = \\x:{1}.
+  destruct
+    ( \\_:I. btree_set_{0}_empty
+    , \\t:(btree_set_{0}, {1}, btree_set_{0}).
+        if __internal_btree_set_{0}_eq x t[1]
+          then __internal_btree_set_{0}_merge 1 t[0] t[2]
+        else if __internal_btree_set_{0}_lte x t[1]
+          then make btree_set_{0} 1 (btree_set_{0}_delete x t[0], t[1], t[2])
+          else make btree_set_{0} 1 (t[0], t[1], btree_set_{0}_delete x t[2])
     )
   in
 
@@ -71,7 +111,7 @@ let btree_set_{0}_find /*: {1} -> btree_set_{0} -> I*/ = \\x:{1}.
 
 make_btree_set("I", "I", "\\x:I. \\y:I. x == y", "\\x:I. \\y:I. x <= y")
 make_btree_set("II", "(I, I)"
-  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]"
+  , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0"
   , "\\x:(I, I). \\y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0]")
 make_btree_set("V", "((I,I),(I,I))"
 , """

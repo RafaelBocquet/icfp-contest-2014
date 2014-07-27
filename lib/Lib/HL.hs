@@ -467,9 +467,9 @@ typecheck (me, mt) e = do
           _ -> throwError $ NonFunctionApplication expr
       let ts = fst <$> l 
       let ss = snd <$> l 
-      if all (== (hash $ ss !! 0)) (hash <$> ss)
+      if all (== (ss !! 0)) ss
         then return $ EVariantDestruct 0 (TFunc (TVariant ts) (ss !! 0)) fs'
-        else throwError $ NonFunctionApplication expr
+        else throwError $ FunctionTypeMismatch expr
     typecheck' (me, mt) expr@(ETrace _ _ a b) = do
       a' <- typecheck (me, mt) a
       b' <- typecheck (me, mt) b

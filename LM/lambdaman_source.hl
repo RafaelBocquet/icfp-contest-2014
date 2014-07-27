@@ -373,11 +373,73 @@ type stepType = userState -> worldState -> (userState, direction) in
 
 type mainType = worldState -> ? -> (userState, stepType) in
 
+/*
+  TODO : 
+  UTC is broken on death !
+*/
+
 let step =
     \u     : userState.
     \world : worldState.
-    let newU = (uWorldSize u, uWorldMap u, uGraph u, world[1], world[2], world[3], uUTC u, uPillSet u, uPowerPillSet u, uFruitPosition u) in
-    (newU, pickMove newU)
+    let u_ =
+      ( uWorldSize u
+      , uWorldMap u
+      , uGraph u
+      , world[1]
+      , world[2]
+      , world[3]
+      , uUTC u + 127
+      , uPillSet u
+      , uPowerPillSet u
+      , uFruitPosition u
+    ) in
+    let u__ =
+      if btree_set_II_find (uLambdaStatus u_)[1] (uPillSet u_)
+        then
+          ( uWorldSize u_
+          , uWorldMap u_
+          , uGraph u_
+          , uLambdaStatus u_
+          , uGhostStatus u_
+          , uFruitStatus u_
+          , uUTC u_ + 10
+          , btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_)
+          , uPowerPillSet u_
+          , uFruitPosition u_
+        )
+      else if btree_set_II_find (uLambdaStatus u_)[1] (uPowerPillSet u_)
+        then
+          ( uWorldSize u_
+          , uWorldMap u_
+          , uGraph u_
+          , uLambdaStatus u_
+          , uGhostStatus u_
+          , uFruitStatus u_
+          , uUTC u_ + 10
+          , uPillSet u_
+          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
+          , uFruitPosition u_
+        )
+      else if
+        and
+          (node_eq (uLambdaStatus u_)[1] (uFruitPosition u_))
+          (uFruitStatus u_)
+        then
+          ( uWorldSize u_
+          , uWorldMap u_
+          , uGraph u_
+          , uLambdaStatus u_
+          , uGhostStatus u_
+          , 0
+          , uUTC u_ + 10
+          , uPillSet u_
+          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
+          , uFruitPosition u_
+        )
+      else u_
+    in
+    trace (uLambdaStatus u__, uUTC u__) in
+    (u__, pickMove u__)
   in
 
 let main =

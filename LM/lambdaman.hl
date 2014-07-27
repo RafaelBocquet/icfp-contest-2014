@@ -648,17 +648,57 @@ let btree_set_I_from_list = \li:[I].
   __internal_btree_set_I_from_list 1 len sorted
   in
 
-let btree_set_I_find /*: I -> btree_set_I -> I*/ = \x:I.
+letrec __internal_btree_set_I_merge : I -> btree_set_I -> btree_set_I -> btree_set_I = \b:I.
+  destruct
+    ( \_:I. \r:btree_set_I. r
+    , \l:(btree_set_I, I, btree_set_I).
+        destruct
+          ( \_:I. (make btree_set_I 1 l)
+          , \r:(btree_set_I, I, btree_set_I).
+              if b
+                then
+                  make btree_set_I 1
+                    ( __internal_btree_set_I_merge (not b) (make btree_set_I 1 l) r[0]
+                    , r[1]
+                    , r[2]
+                    )
+                else
+                  make btree_set_I 1
+                    ( l[0]
+                    , l[1]
+                    , __internal_btree_set_I_merge (not b) l[2] (make btree_set_I 1 r)
+                    )
+          )
+    )
+  in
+
+letrec btree_set_I_find : I -> btree_set_I -> I = \x:I.
   destruct
     ( \_:I. 0
     , \t:(btree_set_I, I, btree_set_I).
-      0
+        if __internal_btree_set_I_eq x t[1]
+          then 1
+        else if __internal_btree_set_I_lte x t[1]
+          then btree_set_I_find x t[0]
+          else btree_set_I_find x t[2]
+    )
+  in
+
+letrec btree_set_I_delete : I -> btree_set_I -> btree_set_I = \x:I.
+  destruct
+    ( \_:I. btree_set_I_empty
+    , \t:(btree_set_I, I, btree_set_I).
+        if __internal_btree_set_I_eq x t[1]
+          then __internal_btree_set_I_merge 1 t[0] t[2]
+        else if __internal_btree_set_I_lte x t[1]
+          then make btree_set_I 1 (btree_set_I_delete x t[0], t[1], t[2])
+          else make btree_set_I 1 (t[0], t[1], btree_set_I_delete x t[2])
     )
   in
 
 
 
-let __internal_btree_set_II_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let __internal_btree_set_II_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
 let __internal_btree_set_II_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
 type __internal_btree_set_II_maybe = <I, (I, I)> in
 
@@ -714,11 +754,51 @@ let btree_set_II_from_list = \li:[(I, I)].
   __internal_btree_set_II_from_list 1 len sorted
   in
 
-let btree_set_II_find /*: (I, I) -> btree_set_II -> I*/ = \x:(I, I).
+letrec __internal_btree_set_II_merge : I -> btree_set_II -> btree_set_II -> btree_set_II = \b:I.
+  destruct
+    ( \_:I. \r:btree_set_II. r
+    , \l:(btree_set_II, (I, I), btree_set_II).
+        destruct
+          ( \_:I. (make btree_set_II 1 l)
+          , \r:(btree_set_II, (I, I), btree_set_II).
+              if b
+                then
+                  make btree_set_II 1
+                    ( __internal_btree_set_II_merge (not b) (make btree_set_II 1 l) r[0]
+                    , r[1]
+                    , r[2]
+                    )
+                else
+                  make btree_set_II 1
+                    ( l[0]
+                    , l[1]
+                    , __internal_btree_set_II_merge (not b) l[2] (make btree_set_II 1 r)
+                    )
+          )
+    )
+  in
+
+letrec btree_set_II_find : (I, I) -> btree_set_II -> I = \x:(I, I).
   destruct
     ( \_:I. 0
     , \t:(btree_set_II, (I, I), btree_set_II).
-      0
+        if __internal_btree_set_II_eq x t[1]
+          then 1
+        else if __internal_btree_set_II_lte x t[1]
+          then btree_set_II_find x t[0]
+          else btree_set_II_find x t[2]
+    )
+  in
+
+letrec btree_set_II_delete : (I, I) -> btree_set_II -> btree_set_II = \x:(I, I).
+  destruct
+    ( \_:I. btree_set_II_empty
+    , \t:(btree_set_II, (I, I), btree_set_II).
+        if __internal_btree_set_II_eq x t[1]
+          then __internal_btree_set_II_merge 1 t[0] t[2]
+        else if __internal_btree_set_II_lte x t[1]
+          then make btree_set_II 1 (btree_set_II_delete x t[0], t[1], t[2])
+          else make btree_set_II 1 (t[0], t[1], btree_set_II_delete x t[2])
     )
   in
 
@@ -787,11 +867,51 @@ let btree_set_V_from_list = \li:[((I,I),(I,I))].
   __internal_btree_set_V_from_list 1 len sorted
   in
 
-let btree_set_V_find /*: ((I,I),(I,I)) -> btree_set_V -> I*/ = \x:((I,I),(I,I)).
+letrec __internal_btree_set_V_merge : I -> btree_set_V -> btree_set_V -> btree_set_V = \b:I.
+  destruct
+    ( \_:I. \r:btree_set_V. r
+    , \l:(btree_set_V, ((I,I),(I,I)), btree_set_V).
+        destruct
+          ( \_:I. (make btree_set_V 1 l)
+          , \r:(btree_set_V, ((I,I),(I,I)), btree_set_V).
+              if b
+                then
+                  make btree_set_V 1
+                    ( __internal_btree_set_V_merge (not b) (make btree_set_V 1 l) r[0]
+                    , r[1]
+                    , r[2]
+                    )
+                else
+                  make btree_set_V 1
+                    ( l[0]
+                    , l[1]
+                    , __internal_btree_set_V_merge (not b) l[2] (make btree_set_V 1 r)
+                    )
+          )
+    )
+  in
+
+letrec btree_set_V_find : ((I,I),(I,I)) -> btree_set_V -> I = \x:((I,I),(I,I)).
   destruct
     ( \_:I. 0
     , \t:(btree_set_V, ((I,I),(I,I)), btree_set_V).
-      0
+        if __internal_btree_set_V_eq x t[1]
+          then 1
+        else if __internal_btree_set_V_lte x t[1]
+          then btree_set_V_find x t[0]
+          else btree_set_V_find x t[2]
+    )
+  in
+
+letrec btree_set_V_delete : ((I,I),(I,I)) -> btree_set_V -> btree_set_V = \x:((I,I),(I,I)).
+  destruct
+    ( \_:I. btree_set_V_empty
+    , \t:(btree_set_V, ((I,I),(I,I)), btree_set_V).
+        if __internal_btree_set_V_eq x t[1]
+          then __internal_btree_set_V_merge 1 t[0] t[2]
+        else if __internal_btree_set_V_lte x t[1]
+          then make btree_set_V 1 (btree_set_V_delete x t[0], t[1], t[2])
+          else make btree_set_V 1 (t[0], t[1], btree_set_V_delete x t[2])
     )
   in
 
@@ -1174,8 +1294,65 @@ type mainType = worldState -> ? -> (userState, stepType) in
 let step =
     \u     : userState.
     \world : worldState.
-    let newU = (uWorldSize u, uWorldMap u, uGraph u, world[1], world[2], world[3], uUTC u, uPillSet u, uPowerPillSet u, uFruitPosition u) in
-    (newU, pickMove newU)
+    let u_ =
+      ( uWorldSize u
+      , uWorldMap u
+      , uGraph u
+      , world[1]
+      , world[2]
+      , world[3]
+      , uUTC u + 127
+      , uPillSet u
+      , uPowerPillSet u
+      , uFruitPosition u
+    ) in
+    let u__ =
+      if btree_set_II_find (uLambdaStatus u_)[1] (uPillSet u_)
+        then
+          ( uWorldSize u_
+          , uWorldMap u_
+          , uGraph u_
+          , uLambdaStatus u_
+          , uGhostStatus u_
+          , uFruitStatus u_
+          , uUTC u_ + 10
+          , btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_)
+          , uPowerPillSet u_
+          , uFruitPosition u_
+        )
+      else if btree_set_II_find (uLambdaStatus u_)[1] (uPowerPillSet u_)
+        then
+          ( uWorldSize u_
+          , uWorldMap u_
+          , uGraph u_
+          , uLambdaStatus u_
+          , uGhostStatus u_
+          , uFruitStatus u_
+          , uUTC u_ + 10
+          , uPillSet u_
+          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
+          , uFruitPosition u_
+        )
+      else if
+        and
+          (node_eq (uLambdaStatus u_)[1] (uFruitPosition u_))
+          (uFruitStatus u_)
+        then
+          ( uWorldSize u_
+          , uWorldMap u_
+          , uGraph u_
+          , uLambdaStatus u_
+          , uGhostStatus u_
+          , 0
+          , uUTC u_ + 10
+          , uPillSet u_
+          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
+          , uFruitPosition u_
+        )
+      else u_
+    in
+    trace (uLambdaStatus u__, uUTC u__) in
+    (u__, pickMove u__)
   in
 
 let main =
