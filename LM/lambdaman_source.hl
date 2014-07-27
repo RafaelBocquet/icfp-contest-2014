@@ -75,10 +75,7 @@ type nodeSet = btree_set_II in
 type vertex = (node, node) in
 type vertexSet = btree_set_V in
 // let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then  in
-type nodeOrVertex = <I, node, vertex> in
-let nodeOrVertexWall = 0 in
-let nodeOrVertexNode = 1 in
-let nodeOrVertexVertex = 2 in
+type NOV = <I, node, vertex> in
 type graph = (nodeSet, vertexSet, qt32_NOV) in
 
 let gNodeSet       = \g:graph. g[0] in
@@ -166,7 +163,19 @@ let pickMove = \u:userState.
             else dirLeft
   in
 
+// Shortest path in graph
+
+// let shortestPathLambdaMan = \u:userState. \p:(I,I).
+
+
 // Map graph
+
+letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
+  let dp = applyDir d p in
+  if isPassageQt wSize world dp
+    then getWay d wSize world dp
+    else p
+  in
 
 let qtFromWorld = \w:[[I]].(
   ( fold (
@@ -184,6 +193,34 @@ let qtFromWorld = \w:[[I]].(
       in (acc1[0]+1, x[1])
     ) with (0, qt32_I_empty)
   ) w)[1]
+  in
+
+let qtGraphFromWorld = \wSize:(I,I). \world:qt32_I.
+  ( natfold (
+      \x_:I.
+      let x = wSize[0]-x_ in
+      \acc1:qt32_NOV.
+        ( natfold (
+            \y_:I.
+            let y = wSize[1]-y_ in
+            \acc2:qt32_NOV.
+            if not (isPassageQt wSize world (x, y))
+              then qt32_NOV_insert acc2 x y (make NOV 0 0)
+            else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
+              then
+                let a = getWay dirLeft wSize world (x,y) in
+                let b = getWay dirRight wSize world (x,y) in
+                qt32_NOV_insert acc2 x y (make NOV 2 (a,b))
+            else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
+              then
+                let a = getWay dirUp wSize world (x,y) in
+                let b = getWay dirDown wSize world (x,y) in
+                qt32_NOV_insert acc2 x y (make NOV 2 (a,b))
+            else qt32_NOV_insert acc2 x y (make NOV 1 (x,y))
+          ) with acc1
+        ) wSize[1]
+    ) with qt32_NOV_empty
+  ) wSize[0]
   in
 
 let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
@@ -255,13 +292,6 @@ let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
   head fruitList
 in
 
-letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
-  let dp = applyDir d p in
-  if isPassageQt wSize world dp
-    then getWay d wSize world dp
-    else p
-  in
-
 let graphFromWorld = \wSize:(I,I). \world:qt32_I.
   let nodeList =
     ( natfold
@@ -298,7 +328,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I.
     ) nodeList
     in
   let vertexSet = btree_set_V_from_list vertexList in
-  (nodeSet, vertexSet, qt32_NOV_empty)
+  (nodeSet, vertexSet, qtGraphFromWorld wSize world)
   in
 
 

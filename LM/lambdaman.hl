@@ -1,922 +1,5 @@
 let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a in let and = \ a:I. \ b:I. if b then a else 0 in
 
-  type qt1_I = I in
-  let qt1_I_at_ = \q:qt1_I. \x_:I. \y_:I. \x:I. \y:I. q in
-  let qt1_I_insert_ = \q:qt1_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I. v in
-  let qt1_I_empty = 0 in
-  
-
-  type qt2_I = ((qt1_I, qt1_I), (qt1_I, qt1_I)) in
-
-  let qt2_I_at_ = \q:qt2_I. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 1
-      then
-        if y >= y_ + 1
-          then qt1_I_at_ q[1][1] (x_ + 1) (y_ + 1) x y
-          else qt1_I_at_ q[1][0] (x_ + 1) (y_)       x y
-      else
-        if y >= y_ + 1
-          then qt1_I_at_ q[0][1] (x_)       (y_ + 1) x y
-          else qt1_I_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt2_I_at = \q:qt2_I. qt2_I_at_ q 0 0 in
-
-  let qt2_I_insert_ = \q:qt2_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
-    if x >= x_ + 1
-      then
-        if y >= y_ + 1
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt1_I_insert_ q[1][1] (x_ + 1) (y_ + 1) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt1_I_insert_ q[1][0] (x_ + 1) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 1
-          then
-          ( ( q[0][0]                                          
-            , qt1_I_insert_ q[0][1] x_ (y_ + 1) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt1_I_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt2_I_insert = \q:qt2_I. qt2_I_insert_ q 0 0 in
-  let qt2_I_empty = ((qt1_I_empty, qt1_I_empty), (qt1_I_empty, qt1_I_empty)) in
-  
-
-  type qt4_I = ((qt2_I, qt2_I), (qt2_I, qt2_I)) in
-
-  let qt4_I_at_ = \q:qt4_I. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 2
-      then
-        if y >= y_ + 2
-          then qt2_I_at_ q[1][1] (x_ + 2) (y_ + 2) x y
-          else qt2_I_at_ q[1][0] (x_ + 2) (y_)       x y
-      else
-        if y >= y_ + 2
-          then qt2_I_at_ q[0][1] (x_)       (y_ + 2) x y
-          else qt2_I_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt4_I_at = \q:qt4_I. qt4_I_at_ q 0 0 in
-
-  let qt4_I_insert_ = \q:qt4_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
-    if x >= x_ + 2
-      then
-        if y >= y_ + 2
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt2_I_insert_ q[1][1] (x_ + 2) (y_ + 2) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt2_I_insert_ q[1][0] (x_ + 2) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 2
-          then
-          ( ( q[0][0]                                          
-            , qt2_I_insert_ q[0][1] x_ (y_ + 2) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt2_I_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt4_I_insert = \q:qt4_I. qt4_I_insert_ q 0 0 in
-  let qt4_I_empty = ((qt2_I_empty, qt2_I_empty), (qt2_I_empty, qt2_I_empty)) in
-  
-
-  type qt8_I = ((qt4_I, qt4_I), (qt4_I, qt4_I)) in
-
-  let qt8_I_at_ = \q:qt8_I. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 4
-      then
-        if y >= y_ + 4
-          then qt4_I_at_ q[1][1] (x_ + 4) (y_ + 4) x y
-          else qt4_I_at_ q[1][0] (x_ + 4) (y_)       x y
-      else
-        if y >= y_ + 4
-          then qt4_I_at_ q[0][1] (x_)       (y_ + 4) x y
-          else qt4_I_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt8_I_at = \q:qt8_I. qt8_I_at_ q 0 0 in
-
-  let qt8_I_insert_ = \q:qt8_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
-    if x >= x_ + 4
-      then
-        if y >= y_ + 4
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt4_I_insert_ q[1][1] (x_ + 4) (y_ + 4) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt4_I_insert_ q[1][0] (x_ + 4) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 4
-          then
-          ( ( q[0][0]                                          
-            , qt4_I_insert_ q[0][1] x_ (y_ + 4) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt4_I_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt8_I_insert = \q:qt8_I. qt8_I_insert_ q 0 0 in
-  let qt8_I_empty = ((qt4_I_empty, qt4_I_empty), (qt4_I_empty, qt4_I_empty)) in
-  
-
-  type qt16_I = ((qt8_I, qt8_I), (qt8_I, qt8_I)) in
-
-  let qt16_I_at_ = \q:qt16_I. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 8
-      then
-        if y >= y_ + 8
-          then qt8_I_at_ q[1][1] (x_ + 8) (y_ + 8) x y
-          else qt8_I_at_ q[1][0] (x_ + 8) (y_)       x y
-      else
-        if y >= y_ + 8
-          then qt8_I_at_ q[0][1] (x_)       (y_ + 8) x y
-          else qt8_I_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt16_I_at = \q:qt16_I. qt16_I_at_ q 0 0 in
-
-  let qt16_I_insert_ = \q:qt16_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
-    if x >= x_ + 8
-      then
-        if y >= y_ + 8
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt8_I_insert_ q[1][1] (x_ + 8) (y_ + 8) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt8_I_insert_ q[1][0] (x_ + 8) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 8
-          then
-          ( ( q[0][0]                                          
-            , qt8_I_insert_ q[0][1] x_ (y_ + 8) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt8_I_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt16_I_insert = \q:qt16_I. qt16_I_insert_ q 0 0 in
-  let qt16_I_empty = ((qt8_I_empty, qt8_I_empty), (qt8_I_empty, qt8_I_empty)) in
-  
-
-  type qt32_I = ((qt16_I, qt16_I), (qt16_I, qt16_I)) in
-
-  let qt32_I_at_ = \q:qt32_I. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 16
-      then
-        if y >= y_ + 16
-          then qt16_I_at_ q[1][1] (x_ + 16) (y_ + 16) x y
-          else qt16_I_at_ q[1][0] (x_ + 16) (y_)       x y
-      else
-        if y >= y_ + 16
-          then qt16_I_at_ q[0][1] (x_)       (y_ + 16) x y
-          else qt16_I_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt32_I_at = \q:qt32_I. qt32_I_at_ q 0 0 in
-
-  let qt32_I_insert_ = \q:qt32_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
-    if x >= x_ + 16
-      then
-        if y >= y_ + 16
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt16_I_insert_ q[1][1] (x_ + 16) (y_ + 16) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt16_I_insert_ q[1][0] (x_ + 16) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 16
-          then
-          ( ( q[0][0]                                          
-            , qt16_I_insert_ q[0][1] x_ (y_ + 16) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt16_I_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt32_I_insert = \q:qt32_I. qt32_I_insert_ q 0 0 in
-  let qt32_I_empty = ((qt16_I_empty, qt16_I_empty), (qt16_I_empty, qt16_I_empty)) in
-  
-
-  type qt1_NOV = <I,(I,I),((I,I),(I,I))> in
-  let qt1_NOV_at_ = \q:qt1_NOV. \x_:I. \y_:I. \x:I. \y:I. q in
-  let qt1_NOV_insert_ = \q:qt1_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV. v in
-  let qt1_NOV_empty = 0 in
-  
-
-  type qt2_NOV = ((qt1_NOV, qt1_NOV), (qt1_NOV, qt1_NOV)) in
-
-  let qt2_NOV_at_ = \q:qt2_NOV. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 1
-      then
-        if y >= y_ + 1
-          then qt1_NOV_at_ q[1][1] (x_ + 1) (y_ + 1) x y
-          else qt1_NOV_at_ q[1][0] (x_ + 1) (y_)       x y
-      else
-        if y >= y_ + 1
-          then qt1_NOV_at_ q[0][1] (x_)       (y_ + 1) x y
-          else qt1_NOV_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt2_NOV_at = \q:qt2_NOV. qt2_NOV_at_ q 0 0 in
-
-  let qt2_NOV_insert_ = \q:qt2_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
-    if x >= x_ + 1
-      then
-        if y >= y_ + 1
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt1_NOV_insert_ q[1][1] (x_ + 1) (y_ + 1) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt1_NOV_insert_ q[1][0] (x_ + 1) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 1
-          then
-          ( ( q[0][0]                                          
-            , qt1_NOV_insert_ q[0][1] x_ (y_ + 1) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt1_NOV_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt2_NOV_insert = \q:qt2_NOV. qt2_NOV_insert_ q 0 0 in
-  let qt2_NOV_empty = ((qt1_NOV_empty, qt1_NOV_empty), (qt1_NOV_empty, qt1_NOV_empty)) in
-  
-
-  type qt4_NOV = ((qt2_NOV, qt2_NOV), (qt2_NOV, qt2_NOV)) in
-
-  let qt4_NOV_at_ = \q:qt4_NOV. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 2
-      then
-        if y >= y_ + 2
-          then qt2_NOV_at_ q[1][1] (x_ + 2) (y_ + 2) x y
-          else qt2_NOV_at_ q[1][0] (x_ + 2) (y_)       x y
-      else
-        if y >= y_ + 2
-          then qt2_NOV_at_ q[0][1] (x_)       (y_ + 2) x y
-          else qt2_NOV_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt4_NOV_at = \q:qt4_NOV. qt4_NOV_at_ q 0 0 in
-
-  let qt4_NOV_insert_ = \q:qt4_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
-    if x >= x_ + 2
-      then
-        if y >= y_ + 2
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt2_NOV_insert_ q[1][1] (x_ + 2) (y_ + 2) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt2_NOV_insert_ q[1][0] (x_ + 2) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 2
-          then
-          ( ( q[0][0]                                          
-            , qt2_NOV_insert_ q[0][1] x_ (y_ + 2) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt2_NOV_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt4_NOV_insert = \q:qt4_NOV. qt4_NOV_insert_ q 0 0 in
-  let qt4_NOV_empty = ((qt2_NOV_empty, qt2_NOV_empty), (qt2_NOV_empty, qt2_NOV_empty)) in
-  
-
-  type qt8_NOV = ((qt4_NOV, qt4_NOV), (qt4_NOV, qt4_NOV)) in
-
-  let qt8_NOV_at_ = \q:qt8_NOV. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 4
-      then
-        if y >= y_ + 4
-          then qt4_NOV_at_ q[1][1] (x_ + 4) (y_ + 4) x y
-          else qt4_NOV_at_ q[1][0] (x_ + 4) (y_)       x y
-      else
-        if y >= y_ + 4
-          then qt4_NOV_at_ q[0][1] (x_)       (y_ + 4) x y
-          else qt4_NOV_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt8_NOV_at = \q:qt8_NOV. qt8_NOV_at_ q 0 0 in
-
-  let qt8_NOV_insert_ = \q:qt8_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
-    if x >= x_ + 4
-      then
-        if y >= y_ + 4
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt4_NOV_insert_ q[1][1] (x_ + 4) (y_ + 4) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt4_NOV_insert_ q[1][0] (x_ + 4) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 4
-          then
-          ( ( q[0][0]                                          
-            , qt4_NOV_insert_ q[0][1] x_ (y_ + 4) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt4_NOV_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt8_NOV_insert = \q:qt8_NOV. qt8_NOV_insert_ q 0 0 in
-  let qt8_NOV_empty = ((qt4_NOV_empty, qt4_NOV_empty), (qt4_NOV_empty, qt4_NOV_empty)) in
-  
-
-  type qt16_NOV = ((qt8_NOV, qt8_NOV), (qt8_NOV, qt8_NOV)) in
-
-  let qt16_NOV_at_ = \q:qt16_NOV. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 8
-      then
-        if y >= y_ + 8
-          then qt8_NOV_at_ q[1][1] (x_ + 8) (y_ + 8) x y
-          else qt8_NOV_at_ q[1][0] (x_ + 8) (y_)       x y
-      else
-        if y >= y_ + 8
-          then qt8_NOV_at_ q[0][1] (x_)       (y_ + 8) x y
-          else qt8_NOV_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt16_NOV_at = \q:qt16_NOV. qt16_NOV_at_ q 0 0 in
-
-  let qt16_NOV_insert_ = \q:qt16_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
-    if x >= x_ + 8
-      then
-        if y >= y_ + 8
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt8_NOV_insert_ q[1][1] (x_ + 8) (y_ + 8) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt8_NOV_insert_ q[1][0] (x_ + 8) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 8
-          then
-          ( ( q[0][0]                                          
-            , qt8_NOV_insert_ q[0][1] x_ (y_ + 8) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt8_NOV_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt16_NOV_insert = \q:qt16_NOV. qt16_NOV_insert_ q 0 0 in
-  let qt16_NOV_empty = ((qt8_NOV_empty, qt8_NOV_empty), (qt8_NOV_empty, qt8_NOV_empty)) in
-  
-
-  type qt32_NOV = ((qt16_NOV, qt16_NOV), (qt16_NOV, qt16_NOV)) in
-
-  let qt32_NOV_at_ = \q:qt32_NOV. \x_:I. \y_:I. \x:I. \y:I.
-    if x >= x_ + 16
-      then
-        if y >= y_ + 16
-          then qt16_NOV_at_ q[1][1] (x_ + 16) (y_ + 16) x y
-          else qt16_NOV_at_ q[1][0] (x_ + 16) (y_)       x y
-      else
-        if y >= y_ + 16
-          then qt16_NOV_at_ q[0][1] (x_)       (y_ + 16) x y
-          else qt16_NOV_at_ q[0][0] (x_)       (y_)       x y
-    in
-  let qt32_NOV_at = \q:qt32_NOV. qt32_NOV_at_ q 0 0 in
-
-  let qt32_NOV_insert_ = \q:qt32_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
-    if x >= x_ + 16
-      then
-        if y >= y_ + 16
-          then
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , qt16_NOV_insert_ q[1][1] (x_ + 16) (y_ + 16) x y v
-             )
-          )
-          else
-          ( ( q[0][0]                                          
-            , q[0][1]
-            )
-          , ( qt16_NOV_insert_ q[1][0] (x_ + 16) y_ x y v
-            , q[1][1]
-            )
-          )
-      else
-        if y >= y_ + 16
-          then
-          ( ( q[0][0]                                          
-            , qt16_NOV_insert_ q[0][1] x_ (y_ + 16) x y v
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-          else
-          ( ( qt16_NOV_insert_ q[0][0] x_ y_ x y v
-            , q[0][1]
-            )
-          ,  ( q[1][0]
-             , q[1][1]
-             )
-          )
-    in
-  let qt32_NOV_insert = \q:qt32_NOV. qt32_NOV_insert_ q 0 0 in
-  let qt32_NOV_empty = ((qt16_NOV_empty, qt16_NOV_empty), (qt16_NOV_empty, qt16_NOV_empty)) in
-  
-
-let __internal_btree_set_I_eq = \x:I. \y:I. x == y in
-let __internal_btree_set_I_lte = \x:I. \y:I. x <= y in
-type __internal_btree_set_I_maybe = <I, I> in
-
-let __internal_btree_set_I_partition_list =
-  fold
-    ( \x:I. \acc:([I], [I]).
-        (cons x with acc[1], acc[0])
-    ) with (empty I, empty I)
-  in
-
-letrec __internal_btree_set_I_fusion_list : [I] -> [I] -> [I] = \l:[I]. \l_:[I].
-  if isempty l
-    then l_
-  else if isempty l_
-    then l
-  else if __internal_btree_set_I_lte (head l) (head l_)
-    then cons (head l) with (__internal_btree_set_I_fusion_list (tail l) l_)
-  else
-    cons (head l_) with (__internal_btree_set_I_fusion_list (tail l_) l)
-  in
-
-letrec __internal_btree_set_I_sort_list : [I] -> [I] = \l:[I].
-  if isempty l
-    then empty I
-  else if isempty (tail l)
-    then l
-  else
-    let p = (\ok:([I],[I]). ok) (__internal_btree_set_I_partition_list l) in
-    __internal_btree_set_I_fusion_list (__internal_btree_set_I_sort_list p[0]) (__internal_btree_set_I_sort_list p[1])
-  in
-
-let __internal_btree_set_I_length_list = fold (\_:I. \acc:I. acc + 1) with 0 in
-
-type btree_set_I = <I, (?, I, ?)> in
-let btree_set_I_empty = make btree_set_I 0 0 in
-let btree_set_I_node = \l:btree_set_I. \x:I. \r:btree_set_I. make btree_set_I 1 (l, x, r) in
-
-letrec __internal_btree_set_I_from_list : I -> I -> [I] -> btree_set_I = \b:I. \n:I. \li:[I]. 
-  if isempty li
-    then btree_set_I_empty
-    else 
-      let p = (natfold (\_:I. \p:([I],[I]). (cons (head p[1]) with p[0], tail p[1])) with (empty I, li)) (n / 2) in
-      let l = __internal_btree_set_I_from_list (not b) (n / 2) p[0] in
-      let r = __internal_btree_set_I_from_list b ((n - 1) / 2) (tail p[1]) in
-      if b
-        then btree_set_I_node l (head p[1]) r
-        else btree_set_I_node r (head p[1]) l
-  in
-
-let btree_set_I_from_list = \li:[I].
-  let len = __internal_btree_set_I_length_list li in
-  let sorted = __internal_btree_set_I_sort_list li in
-  __internal_btree_set_I_from_list 1 len sorted
-  in
-
-letrec __internal_btree_set_I_merge : I -> btree_set_I -> btree_set_I -> btree_set_I = \b:I.
-  destruct
-    ( \_:I. \r:btree_set_I. r
-    , \l:(btree_set_I, I, btree_set_I).
-        destruct
-          ( \_:I. (make btree_set_I 1 l)
-          , \r:(btree_set_I, I, btree_set_I).
-              if b
-                then
-                  make btree_set_I 1
-                    ( __internal_btree_set_I_merge (not b) (make btree_set_I 1 l) r[0]
-                    , r[1]
-                    , r[2]
-                    )
-                else
-                  make btree_set_I 1
-                    ( l[0]
-                    , l[1]
-                    , __internal_btree_set_I_merge (not b) l[2] (make btree_set_I 1 r)
-                    )
-          )
-    )
-  in
-
-letrec btree_set_I_find : I -> btree_set_I -> I = \x:I.
-  destruct
-    ( \_:I. 0
-    , \t:(btree_set_I, I, btree_set_I).
-        if __internal_btree_set_I_eq x t[1]
-          then 1
-        else if __internal_btree_set_I_lte x t[1]
-          then btree_set_I_find x t[0]
-          else btree_set_I_find x t[2]
-    )
-  in
-
-letrec btree_set_I_delete : I -> btree_set_I -> btree_set_I = \x:I.
-  destruct
-    ( \_:I. btree_set_I_empty
-    , \t:(btree_set_I, I, btree_set_I).
-        if __internal_btree_set_I_eq x t[1]
-          then __internal_btree_set_I_merge 1 t[0] t[2]
-        else if __internal_btree_set_I_lte x t[1]
-          then make btree_set_I 1 (btree_set_I_delete x t[0], t[1], t[2])
-          else make btree_set_I 1 (t[0], t[1], btree_set_I_delete x t[2])
-    )
-  in
-
-
-
-let __internal_btree_set_II_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
-let __internal_btree_set_II_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
-type __internal_btree_set_II_maybe = <I, (I, I)> in
-
-let __internal_btree_set_II_partition_list =
-  fold
-    ( \x:(I, I). \acc:([(I, I)], [(I, I)]).
-        (cons x with acc[1], acc[0])
-    ) with (empty (I, I), empty (I, I))
-  in
-
-letrec __internal_btree_set_II_fusion_list : [(I, I)] -> [(I, I)] -> [(I, I)] = \l:[(I, I)]. \l_:[(I, I)].
-  if isempty l
-    then l_
-  else if isempty l_
-    then l
-  else if __internal_btree_set_II_lte (head l) (head l_)
-    then cons (head l) with (__internal_btree_set_II_fusion_list (tail l) l_)
-  else
-    cons (head l_) with (__internal_btree_set_II_fusion_list (tail l_) l)
-  in
-
-letrec __internal_btree_set_II_sort_list : [(I, I)] -> [(I, I)] = \l:[(I, I)].
-  if isempty l
-    then empty (I, I)
-  else if isempty (tail l)
-    then l
-  else
-    let p = (\ok:([(I, I)],[(I, I)]). ok) (__internal_btree_set_II_partition_list l) in
-    __internal_btree_set_II_fusion_list (__internal_btree_set_II_sort_list p[0]) (__internal_btree_set_II_sort_list p[1])
-  in
-
-let __internal_btree_set_II_length_list = fold (\_:(I, I). \acc:I. acc + 1) with 0 in
-
-type btree_set_II = <I, (?, (I, I), ?)> in
-let btree_set_II_empty = make btree_set_II 0 0 in
-let btree_set_II_node = \l:btree_set_II. \x:(I, I). \r:btree_set_II. make btree_set_II 1 (l, x, r) in
-
-letrec __internal_btree_set_II_from_list : I -> I -> [(I, I)] -> btree_set_II = \b:I. \n:I. \li:[(I, I)]. 
-  if isempty li
-    then btree_set_II_empty
-    else 
-      let p = (natfold (\_:I. \p:([(I, I)],[(I, I)]). (cons (head p[1]) with p[0], tail p[1])) with (empty (I, I), li)) (n / 2) in
-      let l = __internal_btree_set_II_from_list (not b) (n / 2) p[0] in
-      let r = __internal_btree_set_II_from_list b ((n - 1) / 2) (tail p[1]) in
-      if b
-        then btree_set_II_node l (head p[1]) r
-        else btree_set_II_node r (head p[1]) l
-  in
-
-let btree_set_II_from_list = \li:[(I, I)].
-  let len = __internal_btree_set_II_length_list li in
-  let sorted = __internal_btree_set_II_sort_list li in
-  __internal_btree_set_II_from_list 1 len sorted
-  in
-
-letrec __internal_btree_set_II_merge : I -> btree_set_II -> btree_set_II -> btree_set_II = \b:I.
-  destruct
-    ( \_:I. \r:btree_set_II. r
-    , \l:(btree_set_II, (I, I), btree_set_II).
-        destruct
-          ( \_:I. (make btree_set_II 1 l)
-          , \r:(btree_set_II, (I, I), btree_set_II).
-              if b
-                then
-                  make btree_set_II 1
-                    ( __internal_btree_set_II_merge (not b) (make btree_set_II 1 l) r[0]
-                    , r[1]
-                    , r[2]
-                    )
-                else
-                  make btree_set_II 1
-                    ( l[0]
-                    , l[1]
-                    , __internal_btree_set_II_merge (not b) l[2] (make btree_set_II 1 r)
-                    )
-          )
-    )
-  in
-
-letrec btree_set_II_find : (I, I) -> btree_set_II -> I = \x:(I, I).
-  destruct
-    ( \_:I. 0
-    , \t:(btree_set_II, (I, I), btree_set_II).
-        if __internal_btree_set_II_eq x t[1]
-          then 1
-        else if __internal_btree_set_II_lte x t[1]
-          then btree_set_II_find x t[0]
-          else btree_set_II_find x t[2]
-    )
-  in
-
-letrec btree_set_II_delete : (I, I) -> btree_set_II -> btree_set_II = \x:(I, I).
-  destruct
-    ( \_:I. btree_set_II_empty
-    , \t:(btree_set_II, (I, I), btree_set_II).
-        if __internal_btree_set_II_eq x t[1]
-          then __internal_btree_set_II_merge 1 t[0] t[2]
-        else if __internal_btree_set_II_lte x t[1]
-          then make btree_set_II 1 (btree_set_II_delete x t[0], t[1], t[2])
-          else make btree_set_II 1 (t[0], t[1], btree_set_II_delete x t[2])
-    )
-  in
-
-
-
-let __internal_btree_set_V_eq = 
-let __cmpeq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
-\x:((I,I),(I,I)). \y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmpeq x[1] y[1] else 0
- in
-let __internal_btree_set_V_lte = 
-let __cmplte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
-let __cmpeq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
-\x:((I,I),(I,I)). \y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmplte x[1] y[1] else __cmplte x[0] y[0]
- in
-type __internal_btree_set_V_maybe = <I, ((I,I),(I,I))> in
-
-let __internal_btree_set_V_partition_list =
-  fold
-    ( \x:((I,I),(I,I)). \acc:([((I,I),(I,I))], [((I,I),(I,I))]).
-        (cons x with acc[1], acc[0])
-    ) with (empty ((I,I),(I,I)), empty ((I,I),(I,I)))
-  in
-
-letrec __internal_btree_set_V_fusion_list : [((I,I),(I,I))] -> [((I,I),(I,I))] -> [((I,I),(I,I))] = \l:[((I,I),(I,I))]. \l_:[((I,I),(I,I))].
-  if isempty l
-    then l_
-  else if isempty l_
-    then l
-  else if __internal_btree_set_V_lte (head l) (head l_)
-    then cons (head l) with (__internal_btree_set_V_fusion_list (tail l) l_)
-  else
-    cons (head l_) with (__internal_btree_set_V_fusion_list (tail l_) l)
-  in
-
-letrec __internal_btree_set_V_sort_list : [((I,I),(I,I))] -> [((I,I),(I,I))] = \l:[((I,I),(I,I))].
-  if isempty l
-    then empty ((I,I),(I,I))
-  else if isempty (tail l)
-    then l
-  else
-    let p = (\ok:([((I,I),(I,I))],[((I,I),(I,I))]). ok) (__internal_btree_set_V_partition_list l) in
-    __internal_btree_set_V_fusion_list (__internal_btree_set_V_sort_list p[0]) (__internal_btree_set_V_sort_list p[1])
-  in
-
-let __internal_btree_set_V_length_list = fold (\_:((I,I),(I,I)). \acc:I. acc + 1) with 0 in
-
-type btree_set_V = <I, (?, ((I,I),(I,I)), ?)> in
-let btree_set_V_empty = make btree_set_V 0 0 in
-let btree_set_V_node = \l:btree_set_V. \x:((I,I),(I,I)). \r:btree_set_V. make btree_set_V 1 (l, x, r) in
-
-letrec __internal_btree_set_V_from_list : I -> I -> [((I,I),(I,I))] -> btree_set_V = \b:I. \n:I. \li:[((I,I),(I,I))]. 
-  if isempty li
-    then btree_set_V_empty
-    else 
-      let p = (natfold (\_:I. \p:([((I,I),(I,I))],[((I,I),(I,I))]). (cons (head p[1]) with p[0], tail p[1])) with (empty ((I,I),(I,I)), li)) (n / 2) in
-      let l = __internal_btree_set_V_from_list (not b) (n / 2) p[0] in
-      let r = __internal_btree_set_V_from_list b ((n - 1) / 2) (tail p[1]) in
-      if b
-        then btree_set_V_node l (head p[1]) r
-        else btree_set_V_node r (head p[1]) l
-  in
-
-let btree_set_V_from_list = \li:[((I,I),(I,I))].
-  let len = __internal_btree_set_V_length_list li in
-  let sorted = __internal_btree_set_V_sort_list li in
-  __internal_btree_set_V_from_list 1 len sorted
-  in
-
-letrec __internal_btree_set_V_merge : I -> btree_set_V -> btree_set_V -> btree_set_V = \b:I.
-  destruct
-    ( \_:I. \r:btree_set_V. r
-    , \l:(btree_set_V, ((I,I),(I,I)), btree_set_V).
-        destruct
-          ( \_:I. (make btree_set_V 1 l)
-          , \r:(btree_set_V, ((I,I),(I,I)), btree_set_V).
-              if b
-                then
-                  make btree_set_V 1
-                    ( __internal_btree_set_V_merge (not b) (make btree_set_V 1 l) r[0]
-                    , r[1]
-                    , r[2]
-                    )
-                else
-                  make btree_set_V 1
-                    ( l[0]
-                    , l[1]
-                    , __internal_btree_set_V_merge (not b) l[2] (make btree_set_V 1 r)
-                    )
-          )
-    )
-  in
-
-letrec btree_set_V_find : ((I,I),(I,I)) -> btree_set_V -> I = \x:((I,I),(I,I)).
-  destruct
-    ( \_:I. 0
-    , \t:(btree_set_V, ((I,I),(I,I)), btree_set_V).
-        if __internal_btree_set_V_eq x t[1]
-          then 1
-        else if __internal_btree_set_V_lte x t[1]
-          then btree_set_V_find x t[0]
-          else btree_set_V_find x t[2]
-    )
-  in
-
-letrec btree_set_V_delete : ((I,I),(I,I)) -> btree_set_V -> btree_set_V = \x:((I,I),(I,I)).
-  destruct
-    ( \_:I. btree_set_V_empty
-    , \t:(btree_set_V, ((I,I),(I,I)), btree_set_V).
-        if __internal_btree_set_V_eq x t[1]
-          then __internal_btree_set_V_merge 1 t[0] t[2]
-        else if __internal_btree_set_V_lte x t[1]
-          then make btree_set_V 1 (btree_set_V_delete x t[0], t[1], t[2])
-          else make btree_set_V 1 (t[0], t[1], btree_set_V_delete x t[2])
-    )
-  in
-
-
-
 let __internal_heap_min_I_eq = \x:I. \y:I. x == y in
 let __internal_heap_min_I_lte = \x:I. \y:I. x <= y in
 type heap_min_I_maybe = <I, I> in
@@ -1000,6 +83,47 @@ letrec __internal_heap_min_I_delete_2 : heap_min_I -> heap_min_I =
             ) h[3]
           )
         ) h[1]
+    )
+  in
+
+letrec __internal_heap_min_I_delete_1 : (I, heap_min_I, I, heap_min_I) -> (heap_min_I, I) = \h:(I, heap_min_I, I, heap_min_I).
+  (destruct
+    ( \__:I. (heap_min_I_empty, h[2])
+    , \l:(I, heap_min_I, I, heap_min_I).
+        (destruct
+          ( \___:I.
+              let p = __internal_heap_min_I_delete_1 l in
+              (heap_min_I_node p[0] h[2] h[3], p[1])
+          , \r:(I, heap_min_I, I, heap_min_I).
+              if or
+                  (h[0] == heap_min_I_tag_complete)
+                  (and
+                    (h[0] == heap_min_I_tag_right)
+                    (r[0] == heap_min_I_tag_complete)
+                  )
+                then
+                  let p = __internal_heap_min_I_delete_1 r in
+                  (heap_min_I_node h[1] h[2] p[0], p[1])
+                else
+                  let p = __internal_heap_min_I_delete_1 l in
+                  (heap_min_I_node p[0] h[2] h[3], p[1])
+          ) 
+        ) h[3]
+    )
+  ) h[1]
+  in
+
+let heap_min_I_delete = 
+  destruct
+    ( \_:I. heap_min_I_empty
+    , \h:(I, heap_min_I, I, heap_min_I).
+        let p = __internal_heap_min_I_delete_1 h in
+        ( destruct
+            ( \_:I. heap_min_I_empty
+            , \p_:(I, heap_min_I, I, heap_min_I).
+                __internal_heap_min_I_delete_2 (heap_min_I_node p_[1] p[1] p_[3])
+            )
+        ) p[0]
     )
   in
 
@@ -1088,6 +212,47 @@ letrec __internal_heap_min_II_delete_2 : heap_min_II -> heap_min_II =
             ) h[3]
           )
         ) h[1]
+    )
+  in
+
+letrec __internal_heap_min_II_delete_1 : (I, heap_min_II, (I, I), heap_min_II) -> (heap_min_II, (I, I)) = \h:(I, heap_min_II, (I, I), heap_min_II).
+  (destruct
+    ( \__:I. (heap_min_II_empty, h[2])
+    , \l:(I, heap_min_II, (I, I), heap_min_II).
+        (destruct
+          ( \___:I.
+              let p = __internal_heap_min_II_delete_1 l in
+              (heap_min_II_node p[0] h[2] h[3], p[1])
+          , \r:(I, heap_min_II, (I, I), heap_min_II).
+              if or
+                  (h[0] == heap_min_II_tag_complete)
+                  (and
+                    (h[0] == heap_min_II_tag_right)
+                    (r[0] == heap_min_II_tag_complete)
+                  )
+                then
+                  let p = __internal_heap_min_II_delete_1 r in
+                  (heap_min_II_node h[1] h[2] p[0], p[1])
+                else
+                  let p = __internal_heap_min_II_delete_1 l in
+                  (heap_min_II_node p[0] h[2] h[3], p[1])
+          ) 
+        ) h[3]
+    )
+  ) h[1]
+  in
+
+let heap_min_II_delete = 
+  destruct
+    ( \_:I. heap_min_II_empty
+    , \h:(I, heap_min_II, (I, I), heap_min_II).
+        let p = __internal_heap_min_II_delete_1 h in
+        ( destruct
+            ( \_:I. heap_min_II_empty
+            , \p_:(I, heap_min_II, (I, I), heap_min_II).
+                __internal_heap_min_II_delete_2 (heap_min_II_node p_[1] p[1] p_[3])
+            )
+        ) p[0]
     )
   in
 
@@ -1186,396 +351,63 @@ letrec __internal_heap_min_V_delete_2 : heap_min_V -> heap_min_V =
     )
   in
 
-
-
-// [I] Functions
-
-let length_I = fold (\_:I. \acc:I. acc + 1) with 0 in
-
-// (I, I) Functions
-
-let length_II = fold (\_:(I,I). \acc:I. acc + 1) with 0 in
-
-// [[I]] Functions
-
-let length_LI = fold (\_:[I]. \acc:I. acc + 1) with 0 in
-
-// Game related definitions
-
-type map          = [[I]] in
-let mapWall       = 0 in
-let mapEmpty      = 1 in
-let mapPill       = 2 in
-let mapPowerPill  = 3 in
-let mapFruit      = 4 in
-let mapLMStart    = 5 in
-let mapGStart     = 6 in
-
-type lmVitality = I in
-
-type ghostVitality         = I in
-let ghostVitalityStandard  = 0 in
-let ghostVitalityFright    = 1 in
-let ghostVitalityInvisible = 2 in
-
-type direction    = I in
-let dirUp         = 0 in
-let dirRight      = 1 in
-let dirDown       = 2 in
-let dirLeft       = 3 in
-
-let applyDir = \d:direction. \pos:(I, I). 
-  if d == dirUp then (pos[0], pos[1]-1)
-  else if d == dirRight then (pos[0]+1, pos[1])
-  else if d == dirDown then (pos[0], pos[1]+1)
-  else (pos[0]-1, pos[1])
+letrec __internal_heap_min_V_delete_1 : (I, heap_min_V, ((I,I),(I,I)), heap_min_V) -> (heap_min_V, ((I,I),(I,I))) = \h:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+  (destruct
+    ( \__:I. (heap_min_V_empty, h[2])
+    , \l:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+        (destruct
+          ( \___:I.
+              let p = __internal_heap_min_V_delete_1 l in
+              (heap_min_V_node p[0] h[2] h[3], p[1])
+          , \r:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+              if or
+                  (h[0] == heap_min_V_tag_complete)
+                  (and
+                    (h[0] == heap_min_V_tag_right)
+                    (r[0] == heap_min_V_tag_complete)
+                  )
+                then
+                  let p = __internal_heap_min_V_delete_1 r in
+                  (heap_min_V_node h[1] h[2] p[0], p[1])
+                else
+                  let p = __internal_heap_min_V_delete_1 l in
+                  (heap_min_V_node p[0] h[2] h[3], p[1])
+          ) 
+        ) h[3]
+    )
+  ) h[1]
   in
 
-let inBounds = \b:(I, I). \p:(I, I).
-  and (and
-    (p[0] >= 0)
-    (p[1] >= 0)
-  ) (and
-    (p[0] < b[0])
-    (p[1] < b[1])
-  )
-  in
-
-let abs = \a:I. if a < 0 then (0-a) else a in
-let min = \a:I. \b:I. if a < b then a else b in
-let max = \a:I. \b:I. if a > b then a else b in
-let distance = \a:(I, I). \b:(I, I). (abs (a[0]-b[0])) + (abs (a[1]-b[1])) in
-
-type lambdaManStatus = (lmVitality, (I, I), direction, I, I) in
-
-type ghostStatus = (ghostVitality, (I, I), direction) in
-
-type fruitStatus = I in
-
-type worldState = (map, lambdaManStatus, [ghostStatus], fruitStatus) in
-
-let worldSize = \world:worldState.
-  (length_I (head world[0]), length_LI world[0]) in
-
-type node = (I, I) in
-let node_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
-let node_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
-type nodeSet = btree_set_II in
-type vertex = (node, node) in
-type vertexSet = btree_set_V in
-// let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then  in
-type nodeOrVertex = <I, node, vertex> in
-let nodeOrVertexWall = 0 in
-let nodeOrVertexNode = 1 in
-let nodeOrVertexVertex = 2 in
-type graph = (nodeSet, vertexSet, qt32_NOV) in
-
-let gNodeSet       = \g:graph. g[0] in
-let gVertexSet     = \g:graph. g[1] in
-let gNOV           = \g:graph. g[2] in
-
-type userState = ((I,I),qt32_I,graph,lambdaManStatus,[ghostStatus],fruitStatus,I,btree_set_II,btree_set_II,(I,I)) in
-
-let uWorldSize     = \u:userState. u[0] in
-let uWorldMap      = \u:userState. u[1] in
-let uGraph         = \u:userState. u[2] in
-let uLambdaStatus  = \u:userState. u[3] in
-let uGhostStatus   = \u:userState. u[4] in
-let uFruitStatus   = \u:userState. u[5] in
-let uUTC           = \u:userState. u[6] in
-let uPillSet       = \u:userState. u[7] in
-let uPowerPillSet  = \u:userState. u[8] in
-let uFruitPosition = \u:userState. u[9] in
-
-let isPassageQt = \ws:(I,I). \q:qt32_I. \p:(I, I).
-  if inBounds ws p
-    then
-      let slot = qt32_I_at q p[0] p[1] in
-      slot /= mapWall
-  else 0
-  in
-
-let isPassage = \u:userState. \p:(I, I).
-  if inBounds (uWorldSize u) p
-    then
-      let slot = qt32_I_at (uWorldMap u) p[0] p[1] in
-      slot /= mapWall
-    else 0
-  in
-
-let isCorrectMove = \u:userState. \d:direction.
-  isPassage u (applyDir d (uLambdaStatus u)[1])
-  in
-
-let distanceNearestGhost =
-  \u:userState.
-  \p:(I, I). (
-    fold (\g:ghostStatus. \d:I. min d (distance g[1] p)) with 512
-  ) (uGhostStatus u) in
-let distanceNearestPill =
-  \u:userState.
-  \p:(I, I). 0
-  in
-
-let scoreMove = \u:userState. \d:direction.
-  let next = applyDir d (uLambdaStatus u)[1] in
-  if isCorrectMove u d
-    then
-     let dPill = distanceNearestPill u next in
-     let dGhost = distanceNearestGhost u next in
-     3*dGhost - 5*dPill
-    else 0-10000000
-in
-
-let pickMove = \u:userState.
-  let upScore = scoreMove u dirUp in
-  let downScore = scoreMove u dirDown in
-  let rightScore = scoreMove u dirRight in
-  let leftScore = scoreMove u dirLeft in
-  if upScore >= downScore
-    then
-      if upScore >= rightScore
-        then
-          if upScore >= leftScore
-            then dirUp
-            else dirLeft
-        else
-          if rightScore >= leftScore
-            then dirRight
-            else dirLeft
-    else
-      if downScore >= rightScore
-        then
-          if downScore >= leftScore
-            then dirDown
-            else dirLeft
-        else
-          if rightScore >= leftScore
-            then dirRight
-            else dirLeft
-  in
-
-// Map graph
-
-let qtFromWorld = \w:[[I]].(
-  ( fold (
-      \l:[I].
-      \acc1:(I, qt32_I).
-      let x = (
-          fold (
-            \s:I.
-            \acc2:(I, qt32_I).
-            ( acc2[0]+1
-            , qt32_I_insert acc2[1] acc2[0] acc1[0] s
+let heap_min_V_delete = 
+  destruct
+    ( \_:I. heap_min_V_empty
+    , \h:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+        let p = __internal_heap_min_V_delete_1 h in
+        ( destruct
+            ( \_:I. heap_min_V_empty
+            , \p_:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+                __internal_heap_min_V_delete_2 (heap_min_V_node p_[1] p[1] p_[3])
             )
-          ) with (0, acc1[1])
-        ) l
-      in (acc1[0]+1, x[1])
-    ) with (0, qt32_I_empty)
-  ) w)[1]
-  in
-
-let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
-  let pillList =
-    ( natfold
-      ( \x_:I.
-        \acc_:[node].
-        let x = wSize[0]-x_ in
-        ( natfold
-          ( \y_:I.
-            \acc:[node].
-            let y = wSize[1]-y_ in
-            if qt32_I_at world x y == mapPill
-              then cons (x, y) with acc
-              else acc
-          )
-          with acc_
-        ) wSize[1]
-      )
-      with empty node
-    ) wSize[0]
-    in
-  btree_set_II_from_list pillList
-in
-
-let makePowerPillSet = \wSize:(I,I). \world:qt32_I.
-  let pillList =
-    ( natfold
-      ( \x_:I.
-        \acc_:[node].
-        let x = wSize[0]-x_ in
-        ( natfold
-          ( \y_:I.
-            \acc:[node].
-            let y = wSize[1]-y_ in
-            if qt32_I_at world x y == mapPowerPill
-              then cons (x, y) with acc
-              else acc
-          )
-          with acc_
-        ) wSize[1]
-      )
-      with empty node
-    ) wSize[0]
-    in
-  btree_set_II_from_list pillList
-in
-
-let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
-  let fruitList =
-    ( natfold
-      ( \x_:I.
-        \acc_:[node].
-        let x = wSize[0]-x_ in
-        ( natfold
-          ( \y_:I.
-            \acc:[node].
-            let y = wSize[1]-y_ in
-            if qt32_I_at world x y == mapFruit
-              then cons (x, y) with acc
-              else acc
-          )
-          with acc_
-        ) wSize[1]
-      )
-      with empty node
-    ) wSize[0]
-    in
-  head fruitList
-in
-
-letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
-  let dp = applyDir d p in
-  if isPassageQt wSize world dp
-    then getWay d wSize world dp
-    else p
-  in
-
-let graphFromWorld = \wSize:(I,I). \world:qt32_I.
-  let nodeList =
-    ( natfold
-      ( \x_:I.
-        \acc_:[node].
-        let x = wSize[0]-x_ in
-        ( natfold
-          ( \y_:I.
-            \acc:[node].
-            let y = wSize[1]-y_ in
-            if not (isPassageQt wSize world (x, y))
-              then acc
-            else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
-              then acc
-            else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
-              then acc
-            else cons (x, y) with acc
-          )
-          with acc_
-        ) wSize[1]
-      )
-      with empty node
-    ) wSize[0]
-    in
-  let nodeSet = btree_set_II_from_list nodeList in
-  let vertexList =
-    ( fold (\p:node. \acc:[vertex].
-        let upp = getWay dirUp wSize world p in
-        let leftp = getWay dirLeft wSize world p in
-        let acc_ = if node_eq upp p then acc else cons (upp, p) with acc in
-        let acc__ = if node_eq leftp p then acc else cons (leftp, p) with acc_ in
-        acc__
-      ) with (empty vertex)
-    ) nodeList
-    in
-  let vertexSet = btree_set_V_from_list vertexList in
-  (nodeSet, vertexSet, qt32_NOV_empty)
+        ) p[0]
+    )
   in
 
 
-// ...
+let h = heap_min_I_insert 2
+  (heap_min_I_insert 8
+  (heap_min_I_insert 0
+  (heap_min_I_insert 95
+  (heap_min_I_empty)))) in
 
+trace (heap_min_I_min h) in
 
-let makeUserState = \world:worldState.
-  let ws = worldSize world       in
-  let qt = qtFromWorld world[0] in
-  (ws, qt, graphFromWorld ws qt, world[1], world[2], world[3], 1, makeNormalPillSet ws qt, makePowerPillSet ws qt, makeFruitPosition ws qt)
-  in
+let h_ = heap_min_I_delete h in
+trace (heap_min_I_min h_) in
 
-type stepType = userState -> worldState -> (userState, direction) in
+let h__ = heap_min_I_delete h_ in
+trace (heap_min_I_min h__) in
 
-type mainType = worldState -> ? -> (userState, stepType) in
+let h___ = heap_min_I_delete h__ in
+trace (heap_min_I_min h___) in
 
-/*
-  TODO : 
-  UTC is broken on death !
-*/
-
-let step =
-    \u     : userState.
-    \world : worldState.
-    let u_ =
-      ( uWorldSize u
-      , uWorldMap u
-      , uGraph u
-      , world[1]
-      , world[2]
-      , world[3]
-      , uUTC u + 127
-      , uPillSet u
-      , uPowerPillSet u
-      , uFruitPosition u
-    ) in
-    let u__ =
-      if btree_set_II_find (uLambdaStatus u_)[1] (uPillSet u_)
-        then
-          ( uWorldSize u_
-          , uWorldMap u_
-          , uGraph u_
-          , uLambdaStatus u_
-          , uGhostStatus u_
-          , uFruitStatus u_
-          , uUTC u_ + 10
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_)
-          , uPowerPillSet u_
-          , uFruitPosition u_
-        )
-      else if btree_set_II_find (uLambdaStatus u_)[1] (uPowerPillSet u_)
-        then
-          ( uWorldSize u_
-          , uWorldMap u_
-          , uGraph u_
-          , uLambdaStatus u_
-          , uGhostStatus u_
-          , uFruitStatus u_
-          , uUTC u_ + 10
-          , uPillSet u_
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
-          , uFruitPosition u_
-        )
-      else if
-        and
-          (node_eq (uLambdaStatus u_)[1] (uFruitPosition u_))
-          (uFruitStatus u_)
-        then
-          ( uWorldSize u_
-          , uWorldMap u_
-          , uGraph u_
-          , uLambdaStatus u_
-          , uGhostStatus u_
-          , 0
-          , uUTC u_ + 10
-          , uPillSet u_
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
-          , uFruitPosition u_
-        )
-      else u_
-    in
-    (u__, pickMove u__)
-  in
-
-let main =
-    \world : worldState.
-    \_     : ? .
-    (makeUserState world, step)
-  in
-
-main
+0

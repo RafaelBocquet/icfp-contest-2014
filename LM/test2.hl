@@ -1,7 +1,18 @@
-let not = \b:I.if b then 0 else 1 in
-type a = <I, (I, I), (I,I,I)> in
-let a0 = make a 0 10 in
-let a1 = make a 1 (12, 42) in
-let a2 = make a 2 (12, 42, 84) in
-let p = destruct (\x:I. x, \x:(I,I).x[0]+x[1], \x:(I,I,I).x[0]+x[2]) in
-(p a0, p a1, p a2)
+let h = heap_min_I_insert 2
+  (heap_min_I_insert 8
+  (heap_min_I_insert 0
+  (heap_min_I_insert 95
+  (heap_min_I_empty)))) in
+
+trace (heap_min_I_min h) in
+
+let h_ = heap_min_I_delete h in
+trace (heap_min_I_min h_) in
+
+let h__ = heap_min_I_delete h_ in
+trace (heap_min_I_min h__) in
+
+let h___ = heap_min_I_delete h__ in
+trace (heap_min_I_min h___) in
+
+0

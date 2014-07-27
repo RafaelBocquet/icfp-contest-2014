@@ -89,6 +89,47 @@ letrec __internal_heap_min_{0}_delete_2 : heap_min_{0} -> heap_min_{0} =
     )
   in
 
+letrec __internal_heap_min_{0}_delete_1 : (I, heap_min_{0}, {1}, heap_min_{0}) -> (heap_min_{0}, {1}) = \\h:(I, heap_min_{0}, {1}, heap_min_{0}).
+  (destruct
+    ( \\__:I. (heap_min_{0}_empty, h[2])
+    , \\l:(I, heap_min_{0}, {1}, heap_min_{0}).
+        (destruct
+          ( \\___:I.
+              let p = __internal_heap_min_{0}_delete_1 l in
+              (heap_min_{0}_node p[0] h[2] h[3], p[1])
+          , \\r:(I, heap_min_{0}, {1}, heap_min_{0}).
+              if or
+                  (h[0] == heap_min_{0}_tag_complete)
+                  (and
+                    (h[0] == heap_min_{0}_tag_right)
+                    (r[0] == heap_min_{0}_tag_complete)
+                  )
+                then
+                  let p = __internal_heap_min_{0}_delete_1 r in
+                  (heap_min_{0}_node h[1] h[2] p[0], p[1])
+                else
+                  let p = __internal_heap_min_{0}_delete_1 l in
+                  (heap_min_{0}_node p[0] h[2] h[3], p[1])
+          ) 
+        ) h[3]
+    )
+  ) h[1]
+  in
+
+let heap_min_{0}_delete = 
+  destruct
+    ( \\_:I. heap_min_{0}_empty
+    , \\h:(I, heap_min_{0}, {1}, heap_min_{0}).
+        let p = __internal_heap_min_{0}_delete_1 h in
+        ( destruct
+            ( \\_:I. heap_min_{0}_empty
+            , \\p_:(I, heap_min_{0}, {1}, heap_min_{0}).
+                __internal_heap_min_{0}_delete_2 (heap_min_{0}_node p_[1] p[1] p_[3])
+            )
+        ) p[0]
+    )
+  in
+
 """.format(name, ty, eq, lte))
 
 make_heap("I", "I", "\\x:I. \\y:I. x == y", "\\x:I. \\y:I. x <= y")

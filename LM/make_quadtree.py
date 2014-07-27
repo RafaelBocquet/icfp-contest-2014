@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-def make_quadtree(name, ty):
+def make_quadtree(name, ty, empty):
   print("""
   type qt1_{2} = {3} in
   let qt1_{2}_at_ = \\q:qt1_{2}. \\x_:I. \\y_:I. \\x:I. \\y:I. q in
   let qt1_{2}_insert_ = \\q:qt1_{2}. \\x_:I. \\y_:I. \\x:I. \\y:I. \\v:qt1_{2}. v in
-  let qt1_{2}_empty = 0 in
-  """.format(0,0,name,ty))
+  let qt1_{2}_empty = {4} in
+  """.format(0,0,name,ty, empty))
   for i in range(1,6):
     q = 2**(i-1)
     p = 2**i
@@ -68,7 +68,7 @@ def make_quadtree(name, ty):
     in
   let qt{1}_{2}_insert = \\q:qt{1}_{2}. qt{1}_{2}_insert_ q 0 0 in
   let qt{1}_{2}_empty = ((qt{0}_{2}_empty, qt{0}_{2}_empty), (qt{0}_{2}_empty, qt{0}_{2}_empty)) in
-  """.format(str(q), str(p), name, ty))
+  """.format(str(q), str(p), name, ty, empty))
 
-make_quadtree('I', 'I')
-make_quadtree('NOV', '<I,(I,I),((I,I),(I,I))>')
+make_quadtree('I', 'I', '0')
+make_quadtree('NOV', '<I,(I,I),((I,I),(I,I))>', 'make qt1_NOV 0 0')
