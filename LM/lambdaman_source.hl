@@ -1,72 +1,14 @@
-// Utility functions
-
-let or  = \a:I. \b:I. if b then 1 else a in
-let and = \a:I. \b:I. if b then a else 0 in
 
 // [I] Functions
 
-let lookup_I =
-    \n:I. \l:[I].
-    (
-      (
-        fold (\m:I. \acc:(I, I).
-          ( acc[0] - 1
-          , if acc[0]
-              then acc[1]
-              else m
-          )
-        ) with (n, 0)
-      ) l
-    )[1]
-  in
-
 let length_I = fold (\_:I. \acc:I. acc + 1) with 0 in
-
-let sum = fold (\m:I. \acc:I. acc + m) with 0 in
 
 // (I, I) Functions
 
-let lookup_II =
-    \n:I. \l:[(I,I)].
-    (
-      (
-        fold (\m:(I,I). \acc:(I, (I,I)).
-          ( acc[0] - 1
-          , if acc[0]
-              then acc[1]
-              else m
-          )
-        ) with (n, (0, 0))
-      ) l
-    )[1]
-  in
-
 let length_II = fold (\_:(I,I). \acc:I. acc + 1) with 0 in
-
-let eq_II =
-  \a:(I,I).
-  \b:(I,I).
-  and
-    (a[0] == b[0]) 
-    (a[1] == b[1]) 
-  in
 
 // [[I]] Functions
 
-let lookup_LI =
-    \n:I. \l:[[I]].
-    (
-      (
-        fold (\m:[I]. \acc:(I, [I]).
-          ( acc[0] - 1
-          , if acc[0]
-              then acc[1]
-              else m
-          )
-        ) with (n, empty I)
-      ) l
-    )[1]
-  in
 let length_LI = fold (\_:[I]. \acc:I. acc + 1) with 0 in
 
 // Game related definitions
@@ -438,7 +380,6 @@ let step =
         )
       else u_
     in
-    trace (uLambdaStatus u__, uUTC u__) in
     (u__, pickMove u__)
   in
 

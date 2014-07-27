@@ -1,4 +1,4 @@
-let not = \ b:I.if b then 0 else 1 in 
+let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a in let and = \ a:I. \ b:I. if b then a else 0 in
 
   type qt1_I = I in
   let qt1_I_at_ = \q:qt1_I. \x_:I. \y_:I. \x:I. \y:I. q in
@@ -916,75 +916,288 @@ letrec btree_set_V_delete : ((I,I),(I,I)) -> btree_set_V -> btree_set_V = \x:((I
   in
 
 
-// Utility functions
 
-let or  = \a:I. \b:I. if b then 1 else a in
-let and = \a:I. \b:I. if b then a else 0 in
+let __internal_heap_min_I_eq = \x:I. \y:I. x == y in
+let __internal_heap_min_I_lte = \x:I. \y:I. x <= y in
+type heap_min_I_maybe = <I, I> in
+
+let heap_min_I_tag_complete = 0 in
+let heap_min_I_tag_left = 1 in
+let heap_min_I_tag_right = 2 in
+
+type heap_min_I = <I, (I, ?, I, ?)> in
+
+let heap_min_I_tag = destruct (\_:I. heap_min_I_tag_complete, \h:(I, heap_min_I, I, heap_min_I). h[0]) in
+
+let heap_min_I_empty = make heap_min_I 0 0 in
+let heap_min_I_node = \l:heap_min_I. \x:I. \r:heap_min_I.
+  make heap_min_I 1
+    (if heap_min_I_tag l == heap_min_I_tag_complete
+      then if heap_min_I_tag r == heap_min_I_tag_complete
+        then heap_min_I_tag_complete
+        else heap_min_I_tag_right
+      else heap_min_I_tag_left
+    , l
+    , x
+    , r
+    )
+  in
+let heap_min_I_singleton = \x:I. heap_min_I_node heap_min_I_empty x heap_min_I_empty in
+
+let heap_min_I_min =
+  destruct
+    ( \_:I. make heap_min_I_maybe 0 0
+    , \h:(I, heap_min_I, I, heap_min_I). make heap_min_I_maybe 1 h[2]
+    )
+  in
+
+letrec __internal_heap_min_I_insert : I -> heap_min_I -> (heap_min_I, I, heap_min_I) = \x:I.
+  destruct
+    ( \_:I. (heap_min_I_empty, x, heap_min_I_empty)
+    , \h:(I, heap_min_I, I, heap_min_I).
+        if h[0] == heap_min_I_tag_right
+          then
+            let r_ = __internal_heap_min_I_insert x h[3] in
+            if __internal_heap_min_I_lte h[2] r_[1]
+              then
+                (h[1], h[2], heap_min_I_node r_[0] r_[1] r_[2])
+              else
+                (h[1], r_[1], heap_min_I_node r_[0] h[2] r_[2])
+          else
+            let l_ = __internal_heap_min_I_insert x h[1] in
+            if __internal_heap_min_I_lte h[2] l_[1]
+              then
+                (heap_min_I_node l_[0] l_[1] l_[2], h[2], h[3])
+              else
+                (heap_min_I_node l_[0] h[2] l_[2], l_[1], h[3])
+    )
+  in
+
+let heap_min_I_insert = \x:I. \h:heap_min_I.
+  let h_ = __internal_heap_min_I_insert x h in
+  heap_min_I_node h_[0] h_[1] h_[2]
+  in
+
+letrec __internal_heap_min_I_delete_2 : heap_min_I -> heap_min_I =
+  destruct
+    ( \_:I. heap_min_I_empty
+    , \h:(I, heap_min_I, I, heap_min_I).
+        (destruct
+          ( \__:I. make heap_min_I 1 h
+          , \l:(I, heap_min_I, I, heap_min_I).
+            (destruct
+              ( \___:I.
+                  if __internal_heap_min_I_lte l[2] h[2]
+                    then make heap_min_I 1 (h[0], make heap_min_I 1 (l[0], l[1], h[2], l[3]), l[2], h[3])
+                    else make heap_min_I 1 h
+              , \r:(I, heap_min_I, I, heap_min_I).
+                  if and (__internal_heap_min_I_lte l[2] h[2]) (__internal_heap_min_I_lte l[2] r[2])
+                    then make heap_min_I 1 (h[0], make heap_min_I 1 (l[0], l[1], h[2], l[3]), l[2], h[3])
+                  else if __internal_heap_min_I_lte r[2] h[2]
+                    then make heap_min_I 1 (h[0], h[1], r[2], make heap_min_I 1 (r[0], r[1], h[2], r[3]))
+                  else make heap_min_I 1 h
+              )
+            ) h[3]
+          )
+        ) h[1]
+    )
+  in
+
+
+
+let __internal_heap_min_II_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+let __internal_heap_min_II_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+type heap_min_II_maybe = <I, (I, I)> in
+
+let heap_min_II_tag_complete = 0 in
+let heap_min_II_tag_left = 1 in
+let heap_min_II_tag_right = 2 in
+
+type heap_min_II = <I, (I, ?, (I, I), ?)> in
+
+let heap_min_II_tag = destruct (\_:I. heap_min_II_tag_complete, \h:(I, heap_min_II, (I, I), heap_min_II). h[0]) in
+
+let heap_min_II_empty = make heap_min_II 0 0 in
+let heap_min_II_node = \l:heap_min_II. \x:(I, I). \r:heap_min_II.
+  make heap_min_II 1
+    (if heap_min_II_tag l == heap_min_II_tag_complete
+      then if heap_min_II_tag r == heap_min_II_tag_complete
+        then heap_min_II_tag_complete
+        else heap_min_II_tag_right
+      else heap_min_II_tag_left
+    , l
+    , x
+    , r
+    )
+  in
+let heap_min_II_singleton = \x:(I, I). heap_min_II_node heap_min_II_empty x heap_min_II_empty in
+
+let heap_min_II_min =
+  destruct
+    ( \_:I. make heap_min_II_maybe 0 0
+    , \h:(I, heap_min_II, (I, I), heap_min_II). make heap_min_II_maybe 1 h[2]
+    )
+  in
+
+letrec __internal_heap_min_II_insert : (I, I) -> heap_min_II -> (heap_min_II, (I, I), heap_min_II) = \x:(I, I).
+  destruct
+    ( \_:I. (heap_min_II_empty, x, heap_min_II_empty)
+    , \h:(I, heap_min_II, (I, I), heap_min_II).
+        if h[0] == heap_min_II_tag_right
+          then
+            let r_ = __internal_heap_min_II_insert x h[3] in
+            if __internal_heap_min_II_lte h[2] r_[1]
+              then
+                (h[1], h[2], heap_min_II_node r_[0] r_[1] r_[2])
+              else
+                (h[1], r_[1], heap_min_II_node r_[0] h[2] r_[2])
+          else
+            let l_ = __internal_heap_min_II_insert x h[1] in
+            if __internal_heap_min_II_lte h[2] l_[1]
+              then
+                (heap_min_II_node l_[0] l_[1] l_[2], h[2], h[3])
+              else
+                (heap_min_II_node l_[0] h[2] l_[2], l_[1], h[3])
+    )
+  in
+
+let heap_min_II_insert = \x:(I, I). \h:heap_min_II.
+  let h_ = __internal_heap_min_II_insert x h in
+  heap_min_II_node h_[0] h_[1] h_[2]
+  in
+
+letrec __internal_heap_min_II_delete_2 : heap_min_II -> heap_min_II =
+  destruct
+    ( \_:I. heap_min_II_empty
+    , \h:(I, heap_min_II, (I, I), heap_min_II).
+        (destruct
+          ( \__:I. make heap_min_II 1 h
+          , \l:(I, heap_min_II, (I, I), heap_min_II).
+            (destruct
+              ( \___:I.
+                  if __internal_heap_min_II_lte l[2] h[2]
+                    then make heap_min_II 1 (h[0], make heap_min_II 1 (l[0], l[1], h[2], l[3]), l[2], h[3])
+                    else make heap_min_II 1 h
+              , \r:(I, heap_min_II, (I, I), heap_min_II).
+                  if and (__internal_heap_min_II_lte l[2] h[2]) (__internal_heap_min_II_lte l[2] r[2])
+                    then make heap_min_II 1 (h[0], make heap_min_II 1 (l[0], l[1], h[2], l[3]), l[2], h[3])
+                  else if __internal_heap_min_II_lte r[2] h[2]
+                    then make heap_min_II 1 (h[0], h[1], r[2], make heap_min_II 1 (r[0], r[1], h[2], r[3]))
+                  else make heap_min_II 1 h
+              )
+            ) h[3]
+          )
+        ) h[1]
+    )
+  in
+
+
+
+let __internal_heap_min_V_eq = 
+let __cmpeq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\x:((I,I),(I,I)). \y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmpeq x[1] y[1] else 0
+ in
+let __internal_heap_min_V_lte = 
+let __cmplte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0] <= y[0] in
+let __cmpeq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
+\x:((I,I),(I,I)). \y:((I,I),(I,I)). if __cmpeq x[0] y[0] then __cmplte x[1] y[1] else __cmplte x[0] y[0]
+ in
+type heap_min_V_maybe = <I, ((I,I),(I,I))> in
+
+let heap_min_V_tag_complete = 0 in
+let heap_min_V_tag_left = 1 in
+let heap_min_V_tag_right = 2 in
+
+type heap_min_V = <I, (I, ?, ((I,I),(I,I)), ?)> in
+
+let heap_min_V_tag = destruct (\_:I. heap_min_V_tag_complete, \h:(I, heap_min_V, ((I,I),(I,I)), heap_min_V). h[0]) in
+
+let heap_min_V_empty = make heap_min_V 0 0 in
+let heap_min_V_node = \l:heap_min_V. \x:((I,I),(I,I)). \r:heap_min_V.
+  make heap_min_V 1
+    (if heap_min_V_tag l == heap_min_V_tag_complete
+      then if heap_min_V_tag r == heap_min_V_tag_complete
+        then heap_min_V_tag_complete
+        else heap_min_V_tag_right
+      else heap_min_V_tag_left
+    , l
+    , x
+    , r
+    )
+  in
+let heap_min_V_singleton = \x:((I,I),(I,I)). heap_min_V_node heap_min_V_empty x heap_min_V_empty in
+
+let heap_min_V_min =
+  destruct
+    ( \_:I. make heap_min_V_maybe 0 0
+    , \h:(I, heap_min_V, ((I,I),(I,I)), heap_min_V). make heap_min_V_maybe 1 h[2]
+    )
+  in
+
+letrec __internal_heap_min_V_insert : ((I,I),(I,I)) -> heap_min_V -> (heap_min_V, ((I,I),(I,I)), heap_min_V) = \x:((I,I),(I,I)).
+  destruct
+    ( \_:I. (heap_min_V_empty, x, heap_min_V_empty)
+    , \h:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+        if h[0] == heap_min_V_tag_right
+          then
+            let r_ = __internal_heap_min_V_insert x h[3] in
+            if __internal_heap_min_V_lte h[2] r_[1]
+              then
+                (h[1], h[2], heap_min_V_node r_[0] r_[1] r_[2])
+              else
+                (h[1], r_[1], heap_min_V_node r_[0] h[2] r_[2])
+          else
+            let l_ = __internal_heap_min_V_insert x h[1] in
+            if __internal_heap_min_V_lte h[2] l_[1]
+              then
+                (heap_min_V_node l_[0] l_[1] l_[2], h[2], h[3])
+              else
+                (heap_min_V_node l_[0] h[2] l_[2], l_[1], h[3])
+    )
+  in
+
+let heap_min_V_insert = \x:((I,I),(I,I)). \h:heap_min_V.
+  let h_ = __internal_heap_min_V_insert x h in
+  heap_min_V_node h_[0] h_[1] h_[2]
+  in
+
+letrec __internal_heap_min_V_delete_2 : heap_min_V -> heap_min_V =
+  destruct
+    ( \_:I. heap_min_V_empty
+    , \h:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+        (destruct
+          ( \__:I. make heap_min_V 1 h
+          , \l:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+            (destruct
+              ( \___:I.
+                  if __internal_heap_min_V_lte l[2] h[2]
+                    then make heap_min_V 1 (h[0], make heap_min_V 1 (l[0], l[1], h[2], l[3]), l[2], h[3])
+                    else make heap_min_V 1 h
+              , \r:(I, heap_min_V, ((I,I),(I,I)), heap_min_V).
+                  if and (__internal_heap_min_V_lte l[2] h[2]) (__internal_heap_min_V_lte l[2] r[2])
+                    then make heap_min_V 1 (h[0], make heap_min_V 1 (l[0], l[1], h[2], l[3]), l[2], h[3])
+                  else if __internal_heap_min_V_lte r[2] h[2]
+                    then make heap_min_V 1 (h[0], h[1], r[2], make heap_min_V 1 (r[0], r[1], h[2], r[3]))
+                  else make heap_min_V 1 h
+              )
+            ) h[3]
+          )
+        ) h[1]
+    )
+  in
+
+
 
 // [I] Functions
 
-let lookup_I =
-    \n:I. \l:[I].
-    (
-      (
-        fold (\m:I. \acc:(I, I).
-          ( acc[0] - 1
-          , if acc[0]
-              then acc[1]
-              else m
-          )
-        ) with (n, 0)
-      ) l
-    )[1]
-  in
-
 let length_I = fold (\_:I. \acc:I. acc + 1) with 0 in
-
-let sum = fold (\m:I. \acc:I. acc + m) with 0 in
 
 // (I, I) Functions
 
-let lookup_II =
-    \n:I. \l:[(I,I)].
-    (
-      (
-        fold (\m:(I,I). \acc:(I, (I,I)).
-          ( acc[0] - 1
-          , if acc[0]
-              then acc[1]
-              else m
-          )
-        ) with (n, (0, 0))
-      ) l
-    )[1]
-  in
-
 let length_II = fold (\_:(I,I). \acc:I. acc + 1) with 0 in
-
-let eq_II =
-  \a:(I,I).
-  \b:(I,I).
-  and
-    (a[0] == b[0]) 
-    (a[1] == b[1]) 
-  in
 
 // [[I]] Functions
 
-let lookup_LI =
-    \n:I. \l:[[I]].
-    (
-      (
-        fold (\m:[I]. \acc:(I, [I]).
-          ( acc[0] - 1
-          , if acc[0]
-              then acc[1]
-              else m
-          )
-        ) with (n, empty I)
-      ) l
-    )[1]
-  in
 let length_LI = fold (\_:[I]. \acc:I. acc + 1) with 0 in
 
 // Game related definitions
@@ -1291,6 +1504,11 @@ type stepType = userState -> worldState -> (userState, direction) in
 
 type mainType = worldState -> ? -> (userState, stepType) in
 
+/*
+  TODO : 
+  UTC is broken on death !
+*/
+
 let step =
     \u     : userState.
     \world : worldState.
@@ -1351,7 +1569,6 @@ let step =
         )
       else u_
     in
-    trace (uLambdaStatus u__, uUTC u__) in
     (u__, pickMove u__)
   in
 
