@@ -7,7 +7,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt1_I_empty = 0 in
   
 
-  type qt2_I = ((qt1_I, qt1_I), (qt1_I, qt1_I)) in
+  type qt2_I = ((?,?),(?,?)) in // ((qt1_I, qt1_I), (qt1_I, qt1_I)) in
 
   let qt2_I_at_ = \q:qt2_I. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 1
@@ -106,7 +106,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt2_I_update = \q:qt2_I. qt2_I_update_ q 0 0 in
   
 
-  type qt4_I = ((qt2_I, qt2_I), (qt2_I, qt2_I)) in
+  type qt4_I = ((?,?),(?,?)) in // ((qt2_I, qt2_I), (qt2_I, qt2_I)) in
 
   let qt4_I_at_ = \q:qt4_I. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 2
@@ -205,7 +205,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt4_I_update = \q:qt4_I. qt4_I_update_ q 0 0 in
   
 
-  type qt8_I = ((qt4_I, qt4_I), (qt4_I, qt4_I)) in
+  type qt8_I = ((?,?),(?,?)) in // ((qt4_I, qt4_I), (qt4_I, qt4_I)) in
 
   let qt8_I_at_ = \q:qt8_I. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 4
@@ -304,7 +304,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt8_I_update = \q:qt8_I. qt8_I_update_ q 0 0 in
   
 
-  type qt16_I = ((qt8_I, qt8_I), (qt8_I, qt8_I)) in
+  type qt16_I = ((?,?),(?,?)) in // ((qt8_I, qt8_I), (qt8_I, qt8_I)) in
 
   let qt16_I_at_ = \q:qt16_I. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 8
@@ -403,7 +403,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt16_I_update = \q:qt16_I. qt16_I_update_ q 0 0 in
   
 
-  type qt32_I = ((qt16_I, qt16_I), (qt16_I, qt16_I)) in
+  type qt32_I = ((?,?),(?,?)) in // ((qt16_I, qt16_I), (qt16_I, qt16_I)) in
 
   let qt32_I_at_ = \q:qt32_I. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 16
@@ -502,6 +502,303 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt32_I_update = \q:qt32_I. qt32_I_update_ q 0 0 in
   
 
+  type qt64_I = ((?,?),(?,?)) in // ((qt32_I, qt32_I), (qt32_I, qt32_I)) in
+
+  let qt64_I_at_ = \q:qt64_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then qt32_I_at_ q[1][1] (x_ + 32) (y_ + 32) x y
+          else qt32_I_at_ q[1][0] (x_ + 32) (y_)       x y
+      else
+        if y >= y_ + 32
+          then qt32_I_at_ q[0][1] (x_)       (y_ + 32) x y
+          else qt32_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt64_I_at = \q:qt64_I. qt64_I_at_ q 0 0 in
+
+  let qt64_I_insert_ = \q:qt64_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt32_I_insert_ q[1][1] (x_ + 32) (y_ + 32) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt32_I_insert_ q[1][0] (x_ + 32) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , qt32_I_insert_ q[0][1] x_ (y_ + 32) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt32_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt64_I_insert = \q:qt64_I. qt64_I_insert_ q 0 0 in
+  let qt64_I_empty = ((qt32_I_empty, qt32_I_empty), (qt32_I_empty, qt32_I_empty)) in
+
+  let qt64_I_update_ = \q:qt64_I. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_I -> qt1_I).
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt32_I_update_ q[1][1] (x_ + 32) (y_ + 32) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt32_I_update_ q[1][0] (x_ + 32) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , qt32_I_update_ q[0][1] x_ (y_ + 32) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt32_I_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt64_I_update = \q:qt64_I. qt64_I_update_ q 0 0 in
+  
+
+  type qt128_I = ((?,?),(?,?)) in // ((qt64_I, qt64_I), (qt64_I, qt64_I)) in
+
+  let qt128_I_at_ = \q:qt128_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then qt64_I_at_ q[1][1] (x_ + 64) (y_ + 64) x y
+          else qt64_I_at_ q[1][0] (x_ + 64) (y_)       x y
+      else
+        if y >= y_ + 64
+          then qt64_I_at_ q[0][1] (x_)       (y_ + 64) x y
+          else qt64_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt128_I_at = \q:qt128_I. qt128_I_at_ q 0 0 in
+
+  let qt128_I_insert_ = \q:qt128_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt64_I_insert_ q[1][1] (x_ + 64) (y_ + 64) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt64_I_insert_ q[1][0] (x_ + 64) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , qt64_I_insert_ q[0][1] x_ (y_ + 64) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt64_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt128_I_insert = \q:qt128_I. qt128_I_insert_ q 0 0 in
+  let qt128_I_empty = ((qt64_I_empty, qt64_I_empty), (qt64_I_empty, qt64_I_empty)) in
+
+  let qt128_I_update_ = \q:qt128_I. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_I -> qt1_I).
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt64_I_update_ q[1][1] (x_ + 64) (y_ + 64) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt64_I_update_ q[1][0] (x_ + 64) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , qt64_I_update_ q[0][1] x_ (y_ + 64) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt64_I_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt128_I_update = \q:qt128_I. qt128_I_update_ q 0 0 in
+  
+
+  type qt256_I = ((?,?),(?,?)) in // ((qt128_I, qt128_I), (qt128_I, qt128_I)) in
+
+  let qt256_I_at_ = \q:qt256_I. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then qt128_I_at_ q[1][1] (x_ + 128) (y_ + 128) x y
+          else qt128_I_at_ q[1][0] (x_ + 128) (y_)       x y
+      else
+        if y >= y_ + 128
+          then qt128_I_at_ q[0][1] (x_)       (y_ + 128) x y
+          else qt128_I_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt256_I_at = \q:qt256_I. qt256_I_at_ q 0 0 in
+
+  let qt256_I_insert_ = \q:qt256_I. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_I.
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt128_I_insert_ q[1][1] (x_ + 128) (y_ + 128) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt128_I_insert_ q[1][0] (x_ + 128) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , qt128_I_insert_ q[0][1] x_ (y_ + 128) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt128_I_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt256_I_insert = \q:qt256_I. qt256_I_insert_ q 0 0 in
+  let qt256_I_empty = ((qt128_I_empty, qt128_I_empty), (qt128_I_empty, qt128_I_empty)) in
+
+  let qt256_I_update_ = \q:qt256_I. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_I -> qt1_I).
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt128_I_update_ q[1][1] (x_ + 128) (y_ + 128) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt128_I_update_ q[1][0] (x_ + 128) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , qt128_I_update_ q[0][1] x_ (y_ + 128) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt128_I_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt256_I_update = \q:qt256_I. qt256_I_update_ q 0 0 in
+  
+
   type qt1_NOV = <I,(I,I),((I,I),(I,I))> in
   let qt1_NOV_at_ = \q:qt1_NOV. \x_:I. \y_:I. \x:I. \y:I. q in
   let qt1_NOV_insert_ = \q:qt1_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV. v in
@@ -509,7 +806,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt1_NOV_empty = make qt1_NOV 0 0 in
   
 
-  type qt2_NOV = ((qt1_NOV, qt1_NOV), (qt1_NOV, qt1_NOV)) in
+  type qt2_NOV = ((?,?),(?,?)) in // ((qt1_NOV, qt1_NOV), (qt1_NOV, qt1_NOV)) in
 
   let qt2_NOV_at_ = \q:qt2_NOV. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 1
@@ -608,7 +905,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt2_NOV_update = \q:qt2_NOV. qt2_NOV_update_ q 0 0 in
   
 
-  type qt4_NOV = ((qt2_NOV, qt2_NOV), (qt2_NOV, qt2_NOV)) in
+  type qt4_NOV = ((?,?),(?,?)) in // ((qt2_NOV, qt2_NOV), (qt2_NOV, qt2_NOV)) in
 
   let qt4_NOV_at_ = \q:qt4_NOV. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 2
@@ -707,7 +1004,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt4_NOV_update = \q:qt4_NOV. qt4_NOV_update_ q 0 0 in
   
 
-  type qt8_NOV = ((qt4_NOV, qt4_NOV), (qt4_NOV, qt4_NOV)) in
+  type qt8_NOV = ((?,?),(?,?)) in // ((qt4_NOV, qt4_NOV), (qt4_NOV, qt4_NOV)) in
 
   let qt8_NOV_at_ = \q:qt8_NOV. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 4
@@ -806,7 +1103,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt8_NOV_update = \q:qt8_NOV. qt8_NOV_update_ q 0 0 in
   
 
-  type qt16_NOV = ((qt8_NOV, qt8_NOV), (qt8_NOV, qt8_NOV)) in
+  type qt16_NOV = ((?,?),(?,?)) in // ((qt8_NOV, qt8_NOV), (qt8_NOV, qt8_NOV)) in
 
   let qt16_NOV_at_ = \q:qt16_NOV. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 8
@@ -905,7 +1202,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt16_NOV_update = \q:qt16_NOV. qt16_NOV_update_ q 0 0 in
   
 
-  type qt32_NOV = ((qt16_NOV, qt16_NOV), (qt16_NOV, qt16_NOV)) in
+  type qt32_NOV = ((?,?),(?,?)) in // ((qt16_NOV, qt16_NOV), (qt16_NOV, qt16_NOV)) in
 
   let qt32_NOV_at_ = \q:qt32_NOV. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 16
@@ -1004,6 +1301,303 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt32_NOV_update = \q:qt32_NOV. qt32_NOV_update_ q 0 0 in
   
 
+  type qt64_NOV = ((?,?),(?,?)) in // ((qt32_NOV, qt32_NOV), (qt32_NOV, qt32_NOV)) in
+
+  let qt64_NOV_at_ = \q:qt64_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then qt32_NOV_at_ q[1][1] (x_ + 32) (y_ + 32) x y
+          else qt32_NOV_at_ q[1][0] (x_ + 32) (y_)       x y
+      else
+        if y >= y_ + 32
+          then qt32_NOV_at_ q[0][1] (x_)       (y_ + 32) x y
+          else qt32_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt64_NOV_at = \q:qt64_NOV. qt64_NOV_at_ q 0 0 in
+
+  let qt64_NOV_insert_ = \q:qt64_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt32_NOV_insert_ q[1][1] (x_ + 32) (y_ + 32) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt32_NOV_insert_ q[1][0] (x_ + 32) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , qt32_NOV_insert_ q[0][1] x_ (y_ + 32) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt32_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt64_NOV_insert = \q:qt64_NOV. qt64_NOV_insert_ q 0 0 in
+  let qt64_NOV_empty = ((qt32_NOV_empty, qt32_NOV_empty), (qt32_NOV_empty, qt32_NOV_empty)) in
+
+  let qt64_NOV_update_ = \q:qt64_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_NOV -> qt1_NOV).
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt32_NOV_update_ q[1][1] (x_ + 32) (y_ + 32) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt32_NOV_update_ q[1][0] (x_ + 32) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , qt32_NOV_update_ q[0][1] x_ (y_ + 32) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt32_NOV_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt64_NOV_update = \q:qt64_NOV. qt64_NOV_update_ q 0 0 in
+  
+
+  type qt128_NOV = ((?,?),(?,?)) in // ((qt64_NOV, qt64_NOV), (qt64_NOV, qt64_NOV)) in
+
+  let qt128_NOV_at_ = \q:qt128_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then qt64_NOV_at_ q[1][1] (x_ + 64) (y_ + 64) x y
+          else qt64_NOV_at_ q[1][0] (x_ + 64) (y_)       x y
+      else
+        if y >= y_ + 64
+          then qt64_NOV_at_ q[0][1] (x_)       (y_ + 64) x y
+          else qt64_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt128_NOV_at = \q:qt128_NOV. qt128_NOV_at_ q 0 0 in
+
+  let qt128_NOV_insert_ = \q:qt128_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt64_NOV_insert_ q[1][1] (x_ + 64) (y_ + 64) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt64_NOV_insert_ q[1][0] (x_ + 64) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , qt64_NOV_insert_ q[0][1] x_ (y_ + 64) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt64_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt128_NOV_insert = \q:qt128_NOV. qt128_NOV_insert_ q 0 0 in
+  let qt128_NOV_empty = ((qt64_NOV_empty, qt64_NOV_empty), (qt64_NOV_empty, qt64_NOV_empty)) in
+
+  let qt128_NOV_update_ = \q:qt128_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_NOV -> qt1_NOV).
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt64_NOV_update_ q[1][1] (x_ + 64) (y_ + 64) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt64_NOV_update_ q[1][0] (x_ + 64) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , qt64_NOV_update_ q[0][1] x_ (y_ + 64) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt64_NOV_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt128_NOV_update = \q:qt128_NOV. qt128_NOV_update_ q 0 0 in
+  
+
+  type qt256_NOV = ((?,?),(?,?)) in // ((qt128_NOV, qt128_NOV), (qt128_NOV, qt128_NOV)) in
+
+  let qt256_NOV_at_ = \q:qt256_NOV. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then qt128_NOV_at_ q[1][1] (x_ + 128) (y_ + 128) x y
+          else qt128_NOV_at_ q[1][0] (x_ + 128) (y_)       x y
+      else
+        if y >= y_ + 128
+          then qt128_NOV_at_ q[0][1] (x_)       (y_ + 128) x y
+          else qt128_NOV_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt256_NOV_at = \q:qt256_NOV. qt256_NOV_at_ q 0 0 in
+
+  let qt256_NOV_insert_ = \q:qt256_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_NOV.
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt128_NOV_insert_ q[1][1] (x_ + 128) (y_ + 128) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt128_NOV_insert_ q[1][0] (x_ + 128) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , qt128_NOV_insert_ q[0][1] x_ (y_ + 128) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt128_NOV_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt256_NOV_insert = \q:qt256_NOV. qt256_NOV_insert_ q 0 0 in
+  let qt256_NOV_empty = ((qt128_NOV_empty, qt128_NOV_empty), (qt128_NOV_empty, qt128_NOV_empty)) in
+
+  let qt256_NOV_update_ = \q:qt256_NOV. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_NOV -> qt1_NOV).
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt128_NOV_update_ q[1][1] (x_ + 128) (y_ + 128) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt128_NOV_update_ q[1][0] (x_ + 128) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , qt128_NOV_update_ q[0][1] x_ (y_ + 128) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt128_NOV_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt256_NOV_update = \q:qt256_NOV. qt256_NOV_update_ q 0 0 in
+  
+
   type qt1_LN = [(I,I)] in
   let qt1_LN_at_ = \q:qt1_LN. \x_:I. \y_:I. \x:I. \y:I. q in
   let qt1_LN_insert_ = \q:qt1_LN. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_LN. v in
@@ -1011,7 +1605,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt1_LN_empty = empty (I,I) in
   
 
-  type qt2_LN = ((qt1_LN, qt1_LN), (qt1_LN, qt1_LN)) in
+  type qt2_LN = ((?,?),(?,?)) in // ((qt1_LN, qt1_LN), (qt1_LN, qt1_LN)) in
 
   let qt2_LN_at_ = \q:qt2_LN. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 1
@@ -1110,7 +1704,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt2_LN_update = \q:qt2_LN. qt2_LN_update_ q 0 0 in
   
 
-  type qt4_LN = ((qt2_LN, qt2_LN), (qt2_LN, qt2_LN)) in
+  type qt4_LN = ((?,?),(?,?)) in // ((qt2_LN, qt2_LN), (qt2_LN, qt2_LN)) in
 
   let qt4_LN_at_ = \q:qt4_LN. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 2
@@ -1209,7 +1803,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt4_LN_update = \q:qt4_LN. qt4_LN_update_ q 0 0 in
   
 
-  type qt8_LN = ((qt4_LN, qt4_LN), (qt4_LN, qt4_LN)) in
+  type qt8_LN = ((?,?),(?,?)) in // ((qt4_LN, qt4_LN), (qt4_LN, qt4_LN)) in
 
   let qt8_LN_at_ = \q:qt8_LN. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 4
@@ -1308,7 +1902,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt8_LN_update = \q:qt8_LN. qt8_LN_update_ q 0 0 in
   
 
-  type qt16_LN = ((qt8_LN, qt8_LN), (qt8_LN, qt8_LN)) in
+  type qt16_LN = ((?,?),(?,?)) in // ((qt8_LN, qt8_LN), (qt8_LN, qt8_LN)) in
 
   let qt16_LN_at_ = \q:qt16_LN. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 8
@@ -1407,7 +2001,7 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
   let qt16_LN_update = \q:qt16_LN. qt16_LN_update_ q 0 0 in
   
 
-  type qt32_LN = ((qt16_LN, qt16_LN), (qt16_LN, qt16_LN)) in
+  type qt32_LN = ((?,?),(?,?)) in // ((qt16_LN, qt16_LN), (qt16_LN, qt16_LN)) in
 
   let qt32_LN_at_ = \q:qt32_LN. \x_:I. \y_:I. \x:I. \y:I.
     if x >= x_ + 16
@@ -1504,6 +2098,303 @@ let not = \ b:I.if b then 0 else 1 in let or  = \ a:I. \ b:I. if b then 1 else a
           )
     in
   let qt32_LN_update = \q:qt32_LN. qt32_LN_update_ q 0 0 in
+  
+
+  type qt64_LN = ((?,?),(?,?)) in // ((qt32_LN, qt32_LN), (qt32_LN, qt32_LN)) in
+
+  let qt64_LN_at_ = \q:qt64_LN. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then qt32_LN_at_ q[1][1] (x_ + 32) (y_ + 32) x y
+          else qt32_LN_at_ q[1][0] (x_ + 32) (y_)       x y
+      else
+        if y >= y_ + 32
+          then qt32_LN_at_ q[0][1] (x_)       (y_ + 32) x y
+          else qt32_LN_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt64_LN_at = \q:qt64_LN. qt64_LN_at_ q 0 0 in
+
+  let qt64_LN_insert_ = \q:qt64_LN. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_LN.
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt32_LN_insert_ q[1][1] (x_ + 32) (y_ + 32) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt32_LN_insert_ q[1][0] (x_ + 32) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , qt32_LN_insert_ q[0][1] x_ (y_ + 32) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt32_LN_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt64_LN_insert = \q:qt64_LN. qt64_LN_insert_ q 0 0 in
+  let qt64_LN_empty = ((qt32_LN_empty, qt32_LN_empty), (qt32_LN_empty, qt32_LN_empty)) in
+
+  let qt64_LN_update_ = \q:qt64_LN. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_LN -> qt1_LN).
+    if x >= x_ + 32
+      then
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt32_LN_update_ q[1][1] (x_ + 32) (y_ + 32) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt32_LN_update_ q[1][0] (x_ + 32) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 32
+          then
+          ( ( q[0][0]                                          
+            , qt32_LN_update_ q[0][1] x_ (y_ + 32) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt32_LN_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt64_LN_update = \q:qt64_LN. qt64_LN_update_ q 0 0 in
+  
+
+  type qt128_LN = ((?,?),(?,?)) in // ((qt64_LN, qt64_LN), (qt64_LN, qt64_LN)) in
+
+  let qt128_LN_at_ = \q:qt128_LN. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then qt64_LN_at_ q[1][1] (x_ + 64) (y_ + 64) x y
+          else qt64_LN_at_ q[1][0] (x_ + 64) (y_)       x y
+      else
+        if y >= y_ + 64
+          then qt64_LN_at_ q[0][1] (x_)       (y_ + 64) x y
+          else qt64_LN_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt128_LN_at = \q:qt128_LN. qt128_LN_at_ q 0 0 in
+
+  let qt128_LN_insert_ = \q:qt128_LN. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_LN.
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt64_LN_insert_ q[1][1] (x_ + 64) (y_ + 64) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt64_LN_insert_ q[1][0] (x_ + 64) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , qt64_LN_insert_ q[0][1] x_ (y_ + 64) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt64_LN_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt128_LN_insert = \q:qt128_LN. qt128_LN_insert_ q 0 0 in
+  let qt128_LN_empty = ((qt64_LN_empty, qt64_LN_empty), (qt64_LN_empty, qt64_LN_empty)) in
+
+  let qt128_LN_update_ = \q:qt128_LN. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_LN -> qt1_LN).
+    if x >= x_ + 64
+      then
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt64_LN_update_ q[1][1] (x_ + 64) (y_ + 64) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt64_LN_update_ q[1][0] (x_ + 64) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 64
+          then
+          ( ( q[0][0]                                          
+            , qt64_LN_update_ q[0][1] x_ (y_ + 64) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt64_LN_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt128_LN_update = \q:qt128_LN. qt128_LN_update_ q 0 0 in
+  
+
+  type qt256_LN = ((?,?),(?,?)) in // ((qt128_LN, qt128_LN), (qt128_LN, qt128_LN)) in
+
+  let qt256_LN_at_ = \q:qt256_LN. \x_:I. \y_:I. \x:I. \y:I.
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then qt128_LN_at_ q[1][1] (x_ + 128) (y_ + 128) x y
+          else qt128_LN_at_ q[1][0] (x_ + 128) (y_)       x y
+      else
+        if y >= y_ + 128
+          then qt128_LN_at_ q[0][1] (x_)       (y_ + 128) x y
+          else qt128_LN_at_ q[0][0] (x_)       (y_)       x y
+    in
+  let qt256_LN_at = \q:qt256_LN. qt256_LN_at_ q 0 0 in
+
+  let qt256_LN_insert_ = \q:qt256_LN. \x_:I. \y_:I. \x:I. \y:I. \v:qt1_LN.
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt128_LN_insert_ q[1][1] (x_ + 128) (y_ + 128) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt128_LN_insert_ q[1][0] (x_ + 128) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , qt128_LN_insert_ q[0][1] x_ (y_ + 128) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt128_LN_insert_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt256_LN_insert = \q:qt256_LN. qt256_LN_insert_ q 0 0 in
+  let qt256_LN_empty = ((qt128_LN_empty, qt128_LN_empty), (qt128_LN_empty, qt128_LN_empty)) in
+
+  let qt256_LN_update_ = \q:qt256_LN. \x_:I. \y_:I. \x:I. \y:I. \v:(qt1_LN -> qt1_LN).
+    if x >= x_ + 128
+      then
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , qt128_LN_update_ q[1][1] (x_ + 128) (y_ + 128) x y v
+             )
+          )
+          else
+          ( ( q[0][0]                                          
+            , q[0][1]
+            )
+          , ( qt128_LN_update_ q[1][0] (x_ + 128) y_ x y v
+            , q[1][1]
+            )
+          )
+      else
+        if y >= y_ + 128
+          then
+          ( ( q[0][0]                                          
+            , qt128_LN_update_ q[0][1] x_ (y_ + 128) x y v
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+          else
+          ( ( qt128_LN_update_ q[0][0] x_ y_ x y v
+            , q[0][1]
+            )
+          ,  ( q[1][0]
+             , q[1][1]
+             )
+          )
+    in
+  let qt256_LN_update = \q:qt256_LN. qt256_LN_update_ q 0 0 in
   
 
 let __internal_btree_set_I_eq = \x:I. \y:I. x == y in
@@ -2783,6 +3674,13 @@ let ghostSpeed = \n:I.
   else 136
   in
 
+let ghostSpeed_F = \n:I.
+  if n == 0 then 195
+  else if n == 1 then 198
+  else if n == 2 then 201
+  else 204
+  in
+
 let lmSpeed = 127 in
 let lmPillSpeed = 10 in
 
@@ -2835,13 +3733,14 @@ let node_lte = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] <= y[1] else x[0]
 let node_eq = \x:(I, I). \y:(I, I). if x[0] == y[0] then x[1] == y[1] else 0 in
 type nodeSet = btree_set_II in
 
-type nodeNeighMap = qt32_LN in
-type nodePillMap = qt32_I in
+type nodeNeighMap = qt256_LN in
+type nodePillMap = qt256_I in
 type vertex = (node, node) in
 type vertexSet = btree_set_V in
 type vertexPillMap = btree_map_V in
 
-type nearestPillMap = qt32_I in
+type nearestPillMap = qt256_I in
+type nearestFruit = qt256_I in
 
 let vertex_eq = \x:vertex. \y:vertex. if node_eq x[0] y[0] then node_eq x[1] y[1] else 0 in
 let vertex_lte = \x:vertex. \y:vertex. if node_eq x[0] y[0] then node_lte x[1] y[1] else node_lte x[0] y[0] in
@@ -2852,7 +3751,7 @@ let normaliseVertex = \v:vertex. if node_lte v[0] v[1] then v else (v[1], v[0]) 
 
 type NOV = <I, node, vertex> in
 
-type graph = (nodeSet, vertexSet, qt32_NOV, nodeNeighMap, nodePillMap, vertexPillMap, nearestPillMap) in
+type graph = (nodeSet, vertexSet, qt256_NOV, nodeNeighMap, nodePillMap, vertexPillMap, nearestPillMap, nearestFruit, I) in
 
 let gNodeSet            = \g:graph. g[0] in
 let gVertexSet          = \g:graph. g[1] in
@@ -2861,8 +3760,10 @@ let gNodeNeighMap       = \g:graph. g[3] in
 let gNodePillMap        = \g:graph. g[4] in
 let gVertexPillMap      = \g:graph. g[5] in
 let gNearestPillMap     = \g:graph. g[6] in
+let gNearestFruit       = \g:graph. g[7] in
+let gPillCount          = \g:graph. g[8] in
 
-type userState = ((I,I),qt32_I,graph,lambdaManStatus,[ghostStatus],fruitStatus,I,btree_set_II,btree_set_II,(I,I)) in
+type userState = ((I,I),qt256_I,graph,lambdaManStatus,[ghostStatus],fruitStatus,I,btree_set_II,btree_set_II,(I,I)) in
 
 let uWorldSize     = \u:userState. u[0] in
 let uWorldMap      = \u:userState. u[1] in
@@ -2875,10 +3776,10 @@ let uPillSet       = \u:userState. u[7] in
 let uPowerPillSet  = \u:userState. u[8] in
 let uFruitPosition = \u:userState. u[9] in
 
-let isPassageQt = \ws:(I,I). \q:qt32_I. \p:(I, I).
+let isPassageQt = \ws:(I,I). \q:qt256_I. \p:(I, I).
   if inBounds ws p
     then
-      let slot = qt32_I_at q p[0] p[1] in
+      let slot = qt256_I_at q p[0] p[1] in
       slot /= mapWall
   else 0
   in
@@ -2886,19 +3787,19 @@ let isPassageQt = \ws:(I,I). \q:qt32_I. \p:(I, I).
 let isPassage = \u:userState. \p:(I, I).
   if inBounds (uWorldSize u) p
     then
-      let slot = qt32_I_at (uWorldMap u) p[0] p[1] in
+      let slot = qt256_I_at (uWorldMap u) p[0] p[1] in
       slot /= mapWall
     else 0
   in
 
 // Shortest path in graph
 
-let shortestPathMaxDepth = 8 in
+let shortestPathMaxDepth = 10 in
 
-let shortestPathImplementation_ = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V. \init:qt32_I. \filter:(node -> I -> I).
+let shortestPathImplementation_ = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V. \init:qt256_I. \filter:(node -> I -> I).
   let hp =
       while 
-        (\acc:(qt32_I, heap_min_V, qt32_I, [node]).
+        (\acc:(qt256_I, heap_min_V, qt256_I, [node]).
           let explored = acc[0] in
           let h = acc[1] in
           (destruct
@@ -2907,54 +3808,54 @@ let shortestPathImplementation_ = \maxDepth:I. \neighMap:nodeNeighMap. \heap:hea
               let x =
                 if or
                   (or
-                    (qt32_I_at explored hc[1][0] hc[1][1])
+                    (qt256_I_at explored hc[1][0] hc[1][1])
                     (filter hc[1] hc[0][0])
                   )
                   (hc[0][1] == maxDepth)
                 then (heap_min_V_delete h, acc[2], acc[3]) // Already explored 
                 else
-                  ( let hcNeigh = qt32_LN_at neighMap hc[1][0] hc[1][1] in
+                  ( let hcNeigh = qt256_LN_at neighMap hc[1][0] hc[1][1] in
                       (fold (
                           \neigh:node.
-                          if not (qt32_I_at explored neigh[0] neigh[1])
+                          if not (qt256_I_at explored neigh[0] neigh[1])
                             then heap_min_V_insert ((hc[0][0] + distance hc[1] neigh, hc[0][1] + 1), neigh)
                             else \x:heap_min_V.x
                         ) with (heap_min_V_delete h)
                       ) hcNeigh
-                  , qt32_I_insert acc[2] hc[1][0] hc[1][1] hc[0][0]
+                  , qt256_I_insert acc[2] hc[1][0] hc[1][1] hc[0][0]
                   , cons hc[1] with acc[3]
                   )
               in
-              (qt32_I_insert explored hc[1][0] hc[1][1] 1, x[0], x[1], x[2])
+              (qt256_I_insert explored hc[1][0] hc[1][1] 1, x[0], x[1], x[2])
             )
           ) (heap_min_V_min h)
         )
       until
-        (\acc:(qt32_I, heap_min_V, qt32_I, [node]).
+        (\acc:(qt256_I, heap_min_V, qt256_I, [node]).
           let explored = acc[0] in
           let h = acc[1] in
           not (heap_min_V_isempty h)
         )
       with
-        (qt32_I_empty, heap, init, empty node)
+        (qt256_I_empty, heap, init, empty node)
     in (hp[2], hp[3])
   in
 
-let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V. let x = shortestPathImplementation_ maxDepth neighMap heap qt32_I_empty (\_:node. \__:I. 0) in x[0] in
+let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V. let x = shortestPathImplementation_ maxDepth neighMap heap qt256_I_empty (\_:node. \__:I. 0) in x[0] in
 
 let shortestPath = \maxDepth:I. \u:userState. \p:(I,I).
   let g = uGraph u in
   (destruct
-    ( \_:I. trace (0-1) in qt32_I_empty
+    ( \_:I. trace (0-1) in qt256_I_empty
     , \node:node. shortestPathImplementation maxDepth (gNodeNeighMap g) (heap_min_V_singleton ((0, 0), node))
-    , \_:vertex. trace (0-1) in qt32_I_empty
+    , \_:vertex. trace (0-1) in qt256_I_empty
     )
-  ) (qt32_NOV_at (gNOV g) p[0] p[1])
+  ) (qt256_NOV_at (gNOV g) p[0] p[1])
   in
 
 // Map query functions
 
-let isNode = \wSize:(I, I). \world:qt32_I. \p:(I, I).
+let isNode = \wSize:(I, I). \world:qt256_I. \p:(I, I).
   let x = p[0] in
   let y = p[1] in
   if not (isPassageQt wSize world (x, y))
@@ -2966,7 +3867,7 @@ let isNode = \wSize:(I, I). \world:qt32_I. \p:(I, I).
     else 1
   in
 
-letrec getWay : direction -> (I, I) -> qt32_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt32_I. \p:(I,I).
+letrec getWay : direction -> (I, I) -> qt256_I -> (I, I) -> (I, I) = \d:direction. \wSize:(I,I). \world:qt256_I. \p:(I,I).
   let dp = applyDir d p in
   if isPassageQt wSize world dp
     then if isNode wSize world dp
@@ -2982,7 +3883,7 @@ let pickMove = \u:userState.
   let lm = uLambdaStatus u in
   let p = lm[1] in
   let curDir = lm[2] in
-    let nodeNeigh = qt32_LN_at (gNodeNeighMap g) p[0] p[1] in
+    let nodeNeigh = qt256_LN_at (gNodeNeighMap g) p[0] p[1] in
     let targetNode = \gh:ghostStatus.
       getWay (ghostDirection gh) (uWorldSize u) (uWorldMap u) (ghostPosition gh)
       in
@@ -3009,7 +3910,7 @@ let pickMove = \u:userState.
         let dir = nodeDirection n in
         let v = normaliseVertex (p, n) in
         let sPath = shortestPath shortestPathMaxDepth u n in
-        let nPill = (qt32_I_at (gNodePillMap g) n[0] n[1]) + (destruct (\_:I. trace (0-1234, v) in 0, \x:I. x)) (btree_map_V_find v (gVertexPillMap g)) in
+        let nPill = (qt256_I_at (gNodePillMap g) n[0] n[1]) + (destruct (\_:I. trace (0-1234, v) in 0, \x:I. x)) (btree_map_V_find v (gVertexPillMap g)) in
         ( ( (fold (
                 \tNode:(I,I,node,ghostStatus). \acc:I.
                 let gPosition = ghostPosition tNode[3] in
@@ -3018,22 +3919,37 @@ let pickMove = \u:userState.
                     , \n_:node. node_eq n n_
                     , \v_:vertex. vertex_eq v v_
                     )
-                ) (qt32_NOV_at (gNOV g) gPosition[0] gPosition[1])
-                  then acc + 1 // If on path, acc + 1
+                ) (qt256_NOV_at (gNOV g) gPosition[0] gPosition[1])
+                  then // If on path, acc + 100000, or acc - 100000 if lmVitality
+                    if lm[0] then acc - 100000 else acc + 100000
+                  else if lm[0]
+                    then
+                      let ghDist = qt256_I_at sPath tNode[2][0] tNode[2][1] in
+                      if or ghDist (node_eq n tNode[2])
+                        then
+                          let myDist = ghDist + qt256_I_at sPath p[0] p[1] in
+                          if tNode[1] * ghostSpeed_F tNode[0] <= lmSpeed * qt256_I_at sPath p[0] p[1] + lmPillSpeed * nPill + 140
+                            then acc - 100000
+                            else acc
+                        else acc // If more than maxDepth nodes, acc
                   else
-                    let ghDist = qt32_I_at sPath tNode[2][0] tNode[2][1] in
+                    let ghDist = qt256_I_at sPath tNode[2][0] tNode[2][1] in
                     if or ghDist (node_eq n tNode[2])
                       then
                         let ghDist_ = ghDist + tNode[1] in
-                        if ghDist_ * ghostSpeed tNode[0] <= lmSpeed * qt32_I_at sPath p[0] p[1] + lmPillSpeed * nPill + 128
-                          then acc + 1
+                        if ghDist_ * ghostSpeed tNode[0] <= lmSpeed * qt256_I_at sPath p[0] p[1] + lmPillSpeed * nPill + 140
+                          then (acc + (lmSpeed * qt256_I_at sPath p[0] p[1] + lmPillSpeed * nPill + 140)) - (ghDist_ * ghostSpeed tNode[0])
                           else acc
                       else acc // If more than maxDepth nodes, acc
               )
               with 0
             ) targetNodes
-          , nPill
-          , qt32_I_at (gNearestPillMap g) n[0] n[1]
+          , if uFruitStatus u then 0 else nPill
+          , if uFruitStatus u
+              then trace (0-1) in qt256_I_at (gNearestFruit g) n[0] n[1] 
+            else if and (and ((gPillCount g) < 10) (lm[3] > 1)) (uUTC u < 400*128)
+              then trace (0-1) in 0
+            else qt256_I_at (gNearestPillMap g) n[0] n[1]
           )
         , dir
         )
@@ -3060,7 +3976,7 @@ let pickMove = \u:userState.
       ((fold moveData_min with ((99999, 0-99999, 99999), dirDown)) moveDatas)[1]
     , \v:vertex. if vertexOKDirection v curDir then curDir else vertexDirection v
     )
-  ) (qt32_NOV_at (gNOV g) lm[1][0] lm[1][1])
+  ) (qt256_NOV_at (gNOV g) lm[1][0] lm[1][1])
   in
 
 
@@ -3069,50 +3985,50 @@ let pickMove = \u:userState.
 let qtFromWorld = \w:[[I]].(
   ( fold (
       \l:[I].
-      \acc1:(I, qt32_I).
+      \acc1:(I, qt256_I).
       let x = (
           fold (
             \s:I.
-            \acc2:(I, qt32_I).
+            \acc2:(I, qt256_I).
             ( acc2[0]+1
-            , qt32_I_insert acc2[1] acc2[0] acc1[0] s
+            , qt256_I_insert acc2[1] acc2[0] acc1[0] s
             )
           ) with (0, acc1[1])
         ) l
       in (acc1[0]+1, x[1])
-    ) with (0, qt32_I_empty)
+    ) with (0, qt256_I_empty)
   ) w)[1]
   in
 
-let qtGraphFromWorld = \wSize:(I,I). \world:qt32_I.
+let qtGraphFromWorld = \wSize:(I,I). \world:qt256_I.
   ( natfold (
       \x_:I.
       let x = wSize[0]-x_ in
-      \acc1:qt32_NOV.
+      \acc1:qt256_NOV.
         ( natfold (
             \y_:I.
             let y = wSize[1]-y_ in
-            \acc2:qt32_NOV.
+            \acc2:qt256_NOV.
             if not (isPassageQt wSize world (x, y))
-              then qt32_NOV_insert acc2 x y (make NOV 0 0)
+              then qt256_NOV_insert acc2 x y (make NOV 0 0)
             else if and (and (isPassageQt wSize world (x+1, y)) (isPassageQt wSize world (x-1, y))) (and (not (isPassageQt wSize world (x, y+1))) (not (isPassageQt wSize world (x, y-1))))
               then
                 let a = getWay dirLeft wSize world (x,y) in
                 let b = getWay dirRight wSize world (x,y) in
-                qt32_NOV_insert acc2 x y (make NOV 2 (a,b))
+                qt256_NOV_insert acc2 x y (make NOV 2 (a,b))
             else if and (and (isPassageQt wSize world (x, y+1)) (isPassageQt wSize world (x, y-1))) (and (not (isPassageQt wSize world (x+1, y))) (not (isPassageQt wSize world (x-1, y))))
               then
                 let a = getWay dirUp wSize world (x,y) in
                 let b = getWay dirDown wSize world (x,y) in
-                qt32_NOV_insert acc2 x y (make NOV 2 (a,b))
-            else qt32_NOV_insert acc2 x y (make NOV 1 (x,y))
+                qt256_NOV_insert acc2 x y (make NOV 2 (a,b))
+            else qt256_NOV_insert acc2 x y (make NOV 1 (x,y))
           ) with acc1
         ) wSize[1]
-    ) with qt32_NOV_empty
+    ) with qt256_NOV_empty
   ) wSize[0]
   in
 
-let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
+let makeNormalPillSet = \wSize:(I,I). \world:qt256_I.
   let pillList =
     ( natfold
       ( \x_:I.
@@ -3122,7 +4038,7 @@ let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if or (qt32_I_at world x y == mapPill) (qt32_I_at world x y == mapPowerPill)
+            if or (qt256_I_at world x y == mapPill) (qt256_I_at world x y == mapPowerPill)
               then cons (x, y) with acc
               else acc
           )
@@ -3135,7 +4051,7 @@ let makeNormalPillSet = \wSize:(I,I). \world:qt32_I.
   btree_set_II_from_list pillList
 in
 
-let makePowerPillSet = \wSize:(I,I). \world:qt32_I.
+let makePowerPillSet = \wSize:(I,I). \world:qt256_I.
   let pillList =
     ( natfold
       ( \x_:I.
@@ -3145,7 +4061,7 @@ let makePowerPillSet = \wSize:(I,I). \world:qt32_I.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if qt32_I_at world x y == mapPowerPill
+            if qt256_I_at world x y == mapPowerPill
               then cons (x, y) with acc
               else acc
           )
@@ -3158,7 +4074,7 @@ let makePowerPillSet = \wSize:(I,I). \world:qt32_I.
   btree_set_II_from_list pillList
 in
 
-let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
+let makeFruitPosition = \wSize:(I,I). \world:qt256_I.
   let fruitList =
     ( natfold
       ( \x_:I.
@@ -3168,7 +4084,7 @@ let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
           ( \y_:I.
             \acc:[node].
             let y = wSize[1]-y_ in
-            if qt32_I_at world x y == mapFruit
+            if qt256_I_at world x y == mapFruit
               then cons (x, y) with acc
               else acc
           )
@@ -3185,7 +4101,7 @@ let isPillNear = \pillSet:btree_set_II. \vertexPillMap:vertexPillMap. \nodeNeigh
   if btree_set_II_find p pillSet
   then 1
   else
-    let neigh = qt32_LN_at nodeNeighMap p[0] p[1] in
+    let neigh = qt256_LN_at nodeNeighMap p[0] p[1] in
     ( fold (
         \n:node.
         \acc:I.
@@ -3202,7 +4118,15 @@ let isPillNear = \pillSet:btree_set_II. \vertexPillMap:vertexPillMap. \nodeNeigh
     ) neigh
   in
 
-let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
+letrec btree_set_II_fold_I : I -> (node -> I -> I) -> btree_set_II -> I = \x:I. \f:(node -> I -> I).
+  destruct
+    ( \_:I. x
+    , \h:(btree_set_II, node, btree_set_II).
+        btree_set_II_fold_I (f h[1] (btree_set_II_fold_I x f h[0])) f h[2]
+    )
+  in
+
+let graphFromWorld = \fruitPos:node. \wSize:(I,I). \world:qt256_I. \pillSet:btree_set_II.
   let nodeList = ( natfold
       ( \x_:I.
         \acc_:[node].
@@ -3234,7 +4158,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
     in
   let vertexSet = btree_set_V_from_list vertexList in
   let nodeNeighMap = (fold
-    (\p:node. \acc:qt32_LN.
+    (\p:node. \acc:qt256_LN.
       let nu = getWay dirUp wSize world p in
       let nd = getWay dirDown wSize world p in
       let nl = getWay dirLeft wSize world p in
@@ -3243,8 +4167,8 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
       let l_ =  if node_eq nd p then l else cons nd with l in
       let l__ =  if node_eq nl p then l_ else cons nl with l_ in
       let l___ =  if node_eq nr p then l__ else cons nr with l__ in
-      qt32_LN_insert acc p[0] p[1] l___
-    ) with qt32_LN_empty) nodeList
+      qt256_LN_insert acc p[0] p[1] l___
+    ) with qt256_LN_empty) nodeList
     in
   let nodeNeighMap_ = (fold (
       \v:vertex. \acc:nodeNeighMap.
@@ -3255,23 +4179,23 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
               \y_:I. \acc_:nodeNeighMap.
               let x = v[0][0] in
               let y = v[0][1] + y_ in
-              qt32_LN_insert acc_ x y l
+              qt256_LN_insert acc_ x y l
             ) with acc
-          ) (v[1][1] - v[0][1] - 1)
+          ) ((v[1][1] - v[0][1]) - 1)
         else
           (natfold (
               \x_:I. \acc_:nodeNeighMap.
               let x = v[0][0] + x_ in
               let y = v[0][1] in
-              qt32_LN_insert acc_ x y l
+              qt256_LN_insert acc_ x y l
             ) with acc
-          ) (v[1][0] - v[0][0] - 1)
+          ) ((v[1][0] - v[0][0]) - 1)
     ) with nodeNeighMap) vertexList
     in 
   let nodePillMap = (fold
-    (\p:node. \acc:qt32_I.
-      qt32_I_insert acc p[0] p[1] (if btree_set_II_find p pillSet then 1 else 0)
-    ) with qt32_I_empty) nodeList
+    (\p:node. \acc:qt256_I.
+      qt256_I_insert acc p[0] p[1] (if btree_set_II_find p pillSet then 1 else 0)
+    ) with qt256_I_empty) nodeList
   in
   let vertexPillMap = btree_map_V_from_set_generate
     (\v:vertex.
@@ -3295,11 +4219,18 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
     ) vertexSet in
   let nearestPillMapHeap = (fold
     (\p:node. \acc:heap_min_V.
-        if isPillNear pillSet vertexPillMap nodeNeighMap p then heap_min_V_insert ((0,0),p) acc else acc
+        if isPillNear pillSet vertexPillMap nodeNeighMap_ p then heap_min_V_insert ((0,0),p) acc else acc
     ) with heap_min_V_empty) nodeList
   in
-  let nearestPillMap = shortestPathImplementation 512 nodeNeighMap nearestPillMapHeap in
-  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap, nearestPillMap)
+  let nearestPillMap = shortestPathImplementation 512 nodeNeighMap_ nearestPillMapHeap in
+  let nearestFruitMapHeap = (fold
+    (\p:node. \acc:heap_min_V.
+      heap_min_V_insert ((0,0),p) acc
+    ) with heap_min_V_empty) (qt256_LN_at nodeNeighMap_ fruitPos[0] fruitPos[1])
+  in
+  let nearestFruitMap = shortestPathImplementation 512 nodeNeighMap_ nearestFruitMapHeap in
+  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap_, nodePillMap, vertexPillMap, nearestPillMap, nearestFruitMap
+    , btree_set_II_fold_I 0 (\_:node. \acc:I. acc + 1) pillSet)
   in
 
 letrec btree_set_II_fold : heap_min_V -> (node -> heap_min_V -> heap_min_V) -> btree_set_II -> heap_min_V = \x:heap_min_V. \f:(node -> heap_min_V -> heap_min_V).
@@ -3310,7 +4241,7 @@ letrec btree_set_II_fold : heap_min_V -> (node -> heap_min_V -> heap_min_V) -> b
     )
   in
 
-let updateNearestPill = \p:node. \nov:qt32_NOV. \pillSet:btree_set_II. \vertexPillMap:vertexPillMap. \neighMap:nodeNeighMap. \pm:nearestPillMap.
+let updateNearestPill = \p:node. \nov:qt256_NOV. \pillSet:btree_set_II. \vertexPillMap:vertexPillMap. \neighMap:nodeNeighMap. \pm:nearestPillMap.
   let needUpdate =
     (shortestPathImplementation_ 256 neighMap
       ((destruct
@@ -3324,9 +4255,9 @@ let updateNearestPill = \p:node. \nov:qt32_NOV. \pillSet:btree_set_II. \vertexPi
             let l_ = if isPillNear pillSet vertexPillMap neighMap v[1] then l else heap_min_V_insert ((0, 0),v[1]) l in
             l_
         )
-      ) (qt32_NOV_at nov p[0] p[1]))
+      ) (qt256_NOV_at nov p[0] p[1]))
       pm
-      (\n:node. \d:I. d /= qt32_I_at pm n[0] n[1])
+      (\n:node. \d:I. d /= qt256_I_at pm n[0] n[1])
     )[1]
   in
   if isempty needUpdate
@@ -3345,31 +4276,37 @@ let updateNearestPill = \p:node. \nov:qt32_NOV. \pillSet:btree_set_II. \vertexPi
                     else btree_set_II_insert n_ acc_
               )
               with acc
-            ) (qt32_LN_at neighMap n[0] n[1])
+            ) (qt256_LN_at neighMap n[0] n[1])
           )
           with btree_set_II_empty
         ) needUpdate
         in
-      (shortestPathImplementation_ 256 neighMap
+      let pm_ = (shortestPathImplementation_ 256 neighMap
         (btree_set_II_fold heap_min_V_empty
-          (\n:node. heap_min_V_insert ((qt32_I_at pm n[0] n[1], 0), n) )
+          (\n:node. heap_min_V_insert ((qt256_I_at pm n[0] n[1], 0), n) )
           needUpdateNeighSet
         )
         pm
         (\n:node. \d:I. not (or (btree_set_II_find n needUpdateSet) (btree_set_II_find n needUpdateNeighSet)))
-      )[0]
+      )[0] in pm_
   in
 
 let updateGraphPill = \pillSet:btree_set_II. \g:graph. \p:node. 
   (destruct
     ( \_:I. g
-    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, qt32_I_update (gNodePillMap g) n[0] n[1] (\A:I. A - 1), gVertexPillMap g
-                 , updateNearestPill p (gNOV g) pillSet (gVertexPillMap g) (gNodeNeighMap g) (gNearestPillMap g))
+    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, qt256_I_update (gNodePillMap g) n[0] n[1] (\A:I. A - 1), gVertexPillMap g
+                 , updateNearestPill p (gNOV g) pillSet (gVertexPillMap g) (gNodeNeighMap g) (gNearestPillMap g)
+                 , gNearestFruit g
+                 , (gPillCount g) - 1
+                 )
     , \v:vertex. let nVertexPillMap = btree_map_V_update v (\A:I. A - 1) (gVertexPillMap g) in
                  (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, gNodePillMap g, nVertexPillMap
-                 , updateNearestPill p (gNOV g) pillSet nVertexPillMap (gNodeNeighMap g) (gNearestPillMap g))
+                 , updateNearestPill p (gNOV g) pillSet nVertexPillMap (gNodeNeighMap g) (gNearestPillMap g)
+                 , gNearestFruit g
+                 , (gPillCount g) - 1
+                 )
     )
-  ) (qt32_NOV_at (gNOV g) p[0] p[1])
+  ) (qt256_NOV_at (gNOV g) p[0] p[1])
   in
 
 // ...
@@ -3380,7 +4317,8 @@ let makeUserState = \world:worldState.
   let qt = qtFromWorld world[0] in
   let pillSet = makeNormalPillSet ws qt in
   let powerPillSet = makePowerPillSet ws qt in
-  (ws, qt, graphFromWorld ws qt pillSet, world[1], world[2], world[3], 1, pillSet, powerPillSet, makeFruitPosition ws qt)
+  let fruitPos = makeFruitPosition ws qt in
+  (ws, qt, graphFromWorld fruitPos ws qt pillSet, world[1], world[2], world[3], 1, pillSet, powerPillSet, fruitPos)
   in
 
 type stepType = userState -> worldState -> (userState, direction) in
@@ -3433,22 +4371,6 @@ let step =
           , uFruitStatus u_
           , uUTC u_ + 10
           , nPillSet
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
-          , uFruitPosition u_
-        )
-      else if
-        and
-          (node_eq (uLambdaStatus u_)[1] (uFruitPosition u_))
-          (uFruitStatus u_)
-        then
-          ( uWorldSize u_
-          , uWorldMap u_
-          , uGraph u_
-          , uLambdaStatus u_
-          , uGhostStatus u_
-          , 0
-          , uUTC u_ + 10
-          , uPillSet u_
           , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
           , uFruitPosition u_
         )

@@ -1,20 +1,16 @@
 Readme
 ======
 
-ICFP Submission
+ICFP Contest 2014 Submission
 
 Team Piter
-
 Rafaël Bocquet & Simon Mauras
 
- * submission is the OUTPUT file
- * The ICFP folder contains haskell code, with a cabal project file
- * Lambda Man files in LM
- * Ghost files in GH
- * Compilation : 
-    cd ICFP
-    cabal sandbox init
-    cabal install --only-dependencies
-    cabal build
-    dist/build/ICFP/ICFP pacman test.hl
-    # Creates a test.hl.out file
+ * The most important files are lib/Lib/HL.hs (typecheck and compile) and LM/lambdaman_source.hl (LambdaMan logic)
+ * Ghosts are coded in the target language (extended with labels)
+ * LambdaMan code is generated from a simple typed language, with Ints, product and sum types.
+ * Code for binary search trees (set and map), quadtrees, and min binary heaps is generated from python files for several types.
+ * I keep in state : set of all pill locations, a graph of the map, nearest Pill distance for each node of the graph, count of pill in each vertex, ...
+ * Ghost avoidance is the main priority, next is nearby pill collection, last is minimizing nearest pill distance.
+ * It will probably fail on the largest maps :(
+
