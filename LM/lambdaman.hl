@@ -1561,6 +1561,18 @@ let btree_set_I_from_list = \li:[I].
   __internal_btree_set_I_from_list 1 len sorted
   in
 
+letrec btree_set_I_insert : I -> btree_set_I -> btree_set_I = \x:I.
+  destruct
+    ( \_:I. btree_set_I_node btree_set_I_empty x btree_set_I_empty
+    , \h:(btree_set_I, I, btree_set_I).
+        if __internal_btree_set_I_eq x h[1]
+          then make btree_set_I 1 h
+        else if __internal_btree_set_I_lte x h[1]
+          then btree_set_I_node (btree_set_I_insert x h[0]) h[1] h[2] 
+          else btree_set_I_node h[0] h[1] (btree_set_I_insert x h[2])
+    )
+  in
+
 letrec __internal_btree_set_I_merge : I -> btree_set_I -> btree_set_I -> btree_set_I = \b:I.
   destruct
     ( \_:I. \r:btree_set_I. r
@@ -1716,6 +1728,18 @@ let btree_set_II_from_list = \li:[(I, I)].
   __internal_btree_set_II_from_list 1 len sorted
   in
 
+letrec btree_set_II_insert : (I, I) -> btree_set_II -> btree_set_II = \x:(I, I).
+  destruct
+    ( \_:I. btree_set_II_node btree_set_II_empty x btree_set_II_empty
+    , \h:(btree_set_II, (I, I), btree_set_II).
+        if __internal_btree_set_II_eq x h[1]
+          then make btree_set_II 1 h
+        else if __internal_btree_set_II_lte x h[1]
+          then btree_set_II_node (btree_set_II_insert x h[0]) h[1] h[2] 
+          else btree_set_II_node h[0] h[1] (btree_set_II_insert x h[2])
+    )
+  in
+
 letrec __internal_btree_set_II_merge : I -> btree_set_II -> btree_set_II -> btree_set_II = \b:I.
   destruct
     ( \_:I. \r:btree_set_II. r
@@ -1869,6 +1893,18 @@ let btree_set_IIL_from_list = \li:[(I, I)].
   let len = __internal_btree_set_IIL_length_list li in
   let sorted = __internal_btree_set_IIL_sort_list li in
   __internal_btree_set_IIL_from_list 1 len sorted
+  in
+
+letrec btree_set_IIL_insert : (I, I) -> btree_set_IIL -> btree_set_IIL = \x:(I, I).
+  destruct
+    ( \_:I. btree_set_IIL_node btree_set_IIL_empty x btree_set_IIL_empty
+    , \h:(btree_set_IIL, (I, I), btree_set_IIL).
+        if __internal_btree_set_IIL_eq x h[1]
+          then make btree_set_IIL 1 h
+        else if __internal_btree_set_IIL_lte x h[1]
+          then btree_set_IIL_node (btree_set_IIL_insert x h[0]) h[1] h[2] 
+          else btree_set_IIL_node h[0] h[1] (btree_set_IIL_insert x h[2])
+    )
   in
 
 letrec __internal_btree_set_IIL_merge : I -> btree_set_IIL -> btree_set_IIL -> btree_set_IIL = \b:I.
@@ -2031,6 +2067,18 @@ let btree_set_V_from_list = \li:[((I,I),(I,I))].
   let len = __internal_btree_set_V_length_list li in
   let sorted = __internal_btree_set_V_sort_list li in
   __internal_btree_set_V_from_list 1 len sorted
+  in
+
+letrec btree_set_V_insert : ((I,I),(I,I)) -> btree_set_V -> btree_set_V = \x:((I,I),(I,I)).
+  destruct
+    ( \_:I. btree_set_V_node btree_set_V_empty x btree_set_V_empty
+    , \h:(btree_set_V, ((I,I),(I,I)), btree_set_V).
+        if __internal_btree_set_V_eq x h[1]
+          then make btree_set_V 1 h
+        else if __internal_btree_set_V_lte x h[1]
+          then btree_set_V_node (btree_set_V_insert x h[0]) h[1] h[2] 
+          else btree_set_V_node h[0] h[1] (btree_set_V_insert x h[2])
+    )
   in
 
 letrec __internal_btree_set_V_merge : I -> btree_set_V -> btree_set_V -> btree_set_V = \b:I.
@@ -2768,6 +2816,8 @@ let distance = \a:(I, I). \b:(I, I). (abs (a[0]-b[0])) + (abs (a[1]-b[1])) in
 
 type lambdaManStatus = (lmVitality, (I, I), direction, I, I) in
 
+let lmVitality = \l:lambdaManStatus. l[0] in
+
 type ghostStatus = (ghostVitality, (I, I), direction) in
 
 let ghostPosition = \g:ghostStatus. g[1] in
@@ -2843,12 +2893,12 @@ let isPassage = \u:userState. \p:(I, I).
 
 // Shortest path in graph
 
-let shortestPathMaxDepth = 16 in
+let shortestPathMaxDepth = 8 in
 
-let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V.
+let shortestPathImplementation_ = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V. \init:qt32_I. \filter:(node -> I -> I).
   let hp =
       while 
-        (\acc:(qt32_I, heap_min_V, qt32_I).
+        (\acc:(qt32_I, heap_min_V, qt32_I, [node]).
           let explored = acc[0] in
           let h = acc[1] in
           (destruct
@@ -2856,9 +2906,12 @@ let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap
             , \hc:((I,I),node).
               let x =
                 if or
-                  (qt32_I_at explored hc[1][0] hc[1][1])
+                  (or
+                    (qt32_I_at explored hc[1][0] hc[1][1])
+                    (filter hc[1] hc[0][0])
+                  )
                   (hc[0][1] == maxDepth)
-                then (heap_min_V_delete h, acc[2]) // Already explored 
+                then (heap_min_V_delete h, acc[2], acc[3]) // Already explored 
                 else
                   ( let hcNeigh = qt32_LN_at neighMap hc[1][0] hc[1][1] in
                       (fold (
@@ -2869,22 +2922,25 @@ let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap
                         ) with (heap_min_V_delete h)
                       ) hcNeigh
                   , qt32_I_insert acc[2] hc[1][0] hc[1][1] hc[0][0]
+                  , cons hc[1] with acc[3]
                   )
               in
-              (qt32_I_insert explored hc[1][0] hc[1][1] 1, x[0], x[1])
+              (qt32_I_insert explored hc[1][0] hc[1][1] 1, x[0], x[1], x[2])
             )
           ) (heap_min_V_min h)
         )
       until
-        (\acc:(qt32_I, heap_min_V, qt32_I).
+        (\acc:(qt32_I, heap_min_V, qt32_I, [node]).
           let explored = acc[0] in
           let h = acc[1] in
           not (heap_min_V_isempty h)
         )
       with
-        (qt32_I_empty, heap, qt32_I_empty)
-    in hp[2]
+        (qt32_I_empty, heap, init, empty node)
+    in (hp[2], hp[3])
   in
+
+let shortestPathImplementation = \maxDepth:I. \neighMap:nodeNeighMap. \heap:heap_min_V. let x = shortestPathImplementation_ maxDepth neighMap heap qt32_I_empty (\_:node. \__:I. 0) in x[0] in
 
 let shortestPath = \maxDepth:I. \u:userState. \p:(I,I).
   let g = uGraph u in
@@ -2966,11 +3022,9 @@ let pickMove = \u:userState.
                   then acc + 1 // If on path, acc + 1
                   else
                     let ghDist = qt32_I_at sPath tNode[2][0] tNode[2][1] in
-                    trace (n, tNode[2], ghDist) in
                     if or ghDist (node_eq n tNode[2])
                       then
                         let ghDist_ = ghDist + tNode[1] in
-                        // trace (ghDist, ghDist_, qt32_I_at sPath p[0] p[1]) in
                         if ghDist_ * ghostSpeed tNode[0] <= lmSpeed * qt32_I_at sPath p[0] p[1] + lmPillSpeed * nPill + 128
                           then acc + 1
                           else acc
@@ -3127,6 +3181,27 @@ let makeFruitPosition = \wSize:(I,I). \world:qt32_I.
   head fruitList
 in
 
+let isPillNear = \pillSet:btree_set_II. \vertexPillMap:vertexPillMap. \nodeNeighMap:nodeNeighMap. \p:node.
+  if btree_set_II_find p pillSet
+  then 1
+  else
+    let neigh = qt32_LN_at nodeNeighMap p[0] p[1] in
+    ( fold (
+        \n:node.
+        \acc:I.
+        let v = normaliseVertex (n, p) in
+        (destruct
+          ( \_:I. acc
+          , \x:I.
+              if x
+                then 1
+                else acc
+          )
+        ) (btree_map_V_find v vertexPillMap)
+      ) with 0
+    ) neigh
+  in
+
 let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
   let nodeList = ( natfold
       ( \x_:I.
@@ -3157,8 +3232,6 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
       ) with (empty vertex)
     ) nodeList
     in
-  trace nodeList in
-  trace vertexList in
   let vertexSet = btree_set_V_from_list vertexList in
   let nodeNeighMap = (fold
     (\p:node. \acc:qt32_LN.
@@ -3210,7 +3283,7 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
               let y = v[0][1] + y_ in
               acc + (if btree_set_II_find (x,y) pillSet then 1 else 0)
             ) with 0
-          ) (v[1][1] - v[0][1] - 1)
+          ) ((v[1][1] - v[0][1]) - 1)
         else
           (natfold (
               \x_:I. \acc:I.
@@ -3218,40 +3291,83 @@ let graphFromWorld = \wSize:(I,I). \world:qt32_I. \pillSet:btree_set_II.
               let y = v[0][1] in
               acc + (if btree_set_II_find (x,y) pillSet then 1 else 0)
             ) with 0
-          ) (v[1][0] - v[0][0] - 1)
+          ) ((v[1][0] - v[0][0]) - 1)
     ) vertexSet in
   let nearestPillMapHeap = (fold
     (\p:node. \acc:heap_min_V.
-      if btree_set_II_find p pillSet
-        then heap_min_V_insert ((0,0),p) acc
-        else
-          let neigh = qt32_LN_at nodeNeighMap p[0] p[1] in
-          ( fold (
-              \n:node.
-              \acc_:heap_min_V.
-              let v = normaliseVertex (n, p) in
-              (destruct
-                ( \_:I. acc_
-                , \x:I.
-                    if x
-                      then heap_min_V_insert ((0,0),p) acc_
-                      else acc_
-                )
-              ) (btree_map_V_find v vertexPillMap)
-            ) with acc
-          ) neigh
+        if isPillNear pillSet vertexPillMap nodeNeighMap p then heap_min_V_insert ((0,0),p) acc else acc
     ) with heap_min_V_empty) nodeList
   in
-  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap, shortestPathImplementation 512 nodeNeighMap nearestPillMapHeap)
+  let nearestPillMap = shortestPathImplementation 512 nodeNeighMap nearestPillMapHeap in
+  (nodeSet, vertexSet, qtGraphFromWorld wSize world, nodeNeighMap, nodePillMap, vertexPillMap, nearestPillMap)
   in
 
-let updateNearestPill = \p:node. \pm:nearestPillMap. pm in
+letrec btree_set_II_fold : heap_min_V -> (node -> heap_min_V -> heap_min_V) -> btree_set_II -> heap_min_V = \x:heap_min_V. \f:(node -> heap_min_V -> heap_min_V).
+  destruct
+    ( \_:I. x
+    , \h:(btree_set_II, node, btree_set_II).
+        btree_set_II_fold (f h[1] (btree_set_II_fold x f h[0])) f h[2]
+    )
+  in
 
-let updateGraphPill = \g:graph. \p:node. 
+let updateNearestPill = \p:node. \nov:qt32_NOV. \pillSet:btree_set_II. \vertexPillMap:vertexPillMap. \neighMap:nodeNeighMap. \pm:nearestPillMap.
+  let needUpdate =
+    (shortestPathImplementation_ 256 neighMap
+      ((destruct
+        ( \_:I. trace (0-1) in heap_min_V_empty
+        , \node:node.
+            if isPillNear pillSet vertexPillMap neighMap node
+              then heap_min_V_empty
+              else heap_min_V_insert ((0, 0),node) heap_min_V_empty
+        , \v:vertex. 
+            let l = if isPillNear pillSet vertexPillMap neighMap v[0] then heap_min_V_empty else heap_min_V_insert ((0, 0),v[0]) heap_min_V_empty in
+            let l_ = if isPillNear pillSet vertexPillMap neighMap v[1] then l else heap_min_V_insert ((0, 0),v[1]) l in
+            l_
+        )
+      ) (qt32_NOV_at nov p[0] p[1]))
+      pm
+      (\n:node. \d:I. d /= qt32_I_at pm n[0] n[1])
+    )[1]
+  in
+  if isempty needUpdate
+    then pm
+    else
+      let needUpdateSet = btree_set_II_from_list needUpdate in
+      let needUpdateNeighSet =
+        ( fold
+          ( \n:node.
+            \acc:btree_set_II.
+            ( fold
+              ( \n_:node.
+                \acc_:btree_set_II.
+                  if btree_set_II_find n_ needUpdateSet
+                    then acc_
+                    else btree_set_II_insert n_ acc_
+              )
+              with acc
+            ) (qt32_LN_at neighMap n[0] n[1])
+          )
+          with btree_set_II_empty
+        ) needUpdate
+        in
+      (shortestPathImplementation_ 256 neighMap
+        (btree_set_II_fold heap_min_V_empty
+          (\n:node. heap_min_V_insert ((qt32_I_at pm n[0] n[1], 0), n) )
+          needUpdateNeighSet
+        )
+        pm
+        (\n:node. \d:I. not (or (btree_set_II_find n needUpdateSet) (btree_set_II_find n needUpdateNeighSet)))
+      )[0]
+  in
+
+let updateGraphPill = \pillSet:btree_set_II. \g:graph. \p:node. 
   (destruct
     ( \_:I. g
-    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, qt32_I_update (gNodePillMap g) n[0] n[1] (\A:I. A - 1), gVertexPillMap g, updateNearestPill p (gNearestPillMap g))
-    , \v:vertex. (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, gNodePillMap g, btree_map_V_update v (\A:I. A - 1) (gVertexPillMap g), updateNearestPill p (gNearestPillMap g))
+    , \n:node.   (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, qt32_I_update (gNodePillMap g) n[0] n[1] (\A:I. A - 1), gVertexPillMap g
+                 , updateNearestPill p (gNOV g) pillSet (gVertexPillMap g) (gNodeNeighMap g) (gNearestPillMap g))
+    , \v:vertex. let nVertexPillMap = btree_map_V_update v (\A:I. A - 1) (gVertexPillMap g) in
+                 (gNodeSet g, gVertexSet g, gNOV g, gNodeNeighMap g, gNodePillMap g, nVertexPillMap
+                 , updateNearestPill p (gNOV g) pillSet nVertexPillMap (gNodeNeighMap g) (gNearestPillMap g))
     )
   ) (qt32_NOV_at (gNOV g) p[0] p[1])
   in
@@ -3294,27 +3410,29 @@ let step =
     let u__ =
       if btree_set_II_find (uLambdaStatus u_)[1] (uPillSet u_)
         then
+          let nPillSet = btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_) in
           ( uWorldSize u_
           , uWorldMap u_
-          , updateGraphPill (uGraph u_) (uLambdaStatus u_)[1]
+          , updateGraphPill nPillSet (uGraph u_) (uLambdaStatus u_)[1]
           , uLambdaStatus u_
           , uGhostStatus u_
           , uFruitStatus u_
           , uUTC u_ + 10
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_)
+          , nPillSet
           , uPowerPillSet u_
           , uFruitPosition u_
         )
       else if btree_set_II_find (uLambdaStatus u_)[1] (uPowerPillSet u_)
         then
+          let nPillSet = btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_) in
           ( uWorldSize u_
           , uWorldMap u_
-          , updateGraphPill (uGraph u_) (uLambdaStatus u_)[1]
+          , updateGraphPill nPillSet (uGraph u_) (uLambdaStatus u_)[1]
           , uLambdaStatus u_
           , uGhostStatus u_
           , uFruitStatus u_
           , uUTC u_ + 10
-          , btree_set_II_delete (uLambdaStatus u_)[1] (uPillSet u_)
+          , nPillSet
           , btree_set_II_delete (uLambdaStatus u_)[1] (uPowerPillSet u_)
           , uFruitPosition u_
         )

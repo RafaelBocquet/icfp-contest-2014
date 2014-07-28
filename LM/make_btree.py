@@ -58,6 +58,18 @@ let btree_set_{0}_from_list = \\li:[{1}].
   __internal_btree_set_{0}_from_list 1 len sorted
   in
 
+letrec btree_set_{0}_insert : {1} -> btree_set_{0} -> btree_set_{0} = \\x:{1}.
+  destruct
+    ( \\_:I. btree_set_{0}_node btree_set_{0}_empty x btree_set_{0}_empty
+    , \\h:(btree_set_{0}, {1}, btree_set_{0}).
+        if __internal_btree_set_{0}_eq x h[1]
+          then make btree_set_{0} 1 h
+        else if __internal_btree_set_{0}_lte x h[1]
+          then btree_set_{0}_node (btree_set_{0}_insert x h[0]) h[1] h[2] 
+          else btree_set_{0}_node h[0] h[1] (btree_set_{0}_insert x h[2])
+    )
+  in
+
 letrec __internal_btree_set_{0}_merge : I -> btree_set_{0} -> btree_set_{0} -> btree_set_{0} = \\b:I.
   destruct
     ( \\_:I. \\r:btree_set_{0}. r
