@@ -14,3 +14,15 @@ Rafaël Bocquet & Simon Mauras
  * Ghost avoidance is the main priority, next is nearby pill collection, last is minimizing nearest pill distance.
  * It will probably fail on the largest maps :(
 
+
+I'll add a bit more detail later.
+
+
+Execution time in the simulator
+===============================
+
+If you try to run the generated code in the simulator, you will notice it is very slow (compared to other solutions), yet should still be under the 180M / 3M instructions limits.
+As I translate (let x = v in e) as (lambda x. e) v, each defined variable adds one to the depth of the environment stack. There are therefore lots of instructions LD n 0 with n > 100 (it goes up to 422), and while these still count as just one instruction, their execution time in the simulator is O(n). Packing successively defined variables into a single frame could have reduced it. (Number of frames is then the maximal distance between start nodes and end nodes in the directed acyclic graph of variables and their dependencies)
+If the execution time is still O(n) during the submissions ranking (I think it is the same code than in the js simulator, so it should be O(n)), it should have been possible to make a submission that fits under the constraints, while the simulator can't run it. e.g. create 1M environment frames, in about 10M instructions. Then fetch 1M times from the 1Mth frame, and you get O(1M²) run time \o/
+
+(If I had noticed it earlier, I would have make a fake submission with this, to force the judges to prove my solution is not the best one using formal verifincation !)
